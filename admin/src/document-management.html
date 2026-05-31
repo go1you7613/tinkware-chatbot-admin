@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>문서 정보 관리 — 팅크웨어 챗봇 관리자</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+  <style>
+    body { background: var(--color-bg-page); }
+    .doc-layout { display: grid; grid-template-columns: 1fr 40%; gap: 16px; align-items: start; }
+    .filter-bar { display: grid; grid-template-columns: 160px 160px 1fr; gap: 8px; margin-bottom: 12px; }
+    .detail-panel { display: none; background: white; border: 1px solid var(--color-border-light); border-radius: var(--radius-card); overflow: hidden; }
+    .detail-panel.open { display: block; }
+    .detail-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: #FAFAFA; border-bottom: 1px solid var(--color-border-light); }
+    .info-row { display: grid; grid-template-columns: 100px 1fr; gap: 12px; padding: 8px 0; font-size: 13px; }
+    .info-label { color: var(--color-text-sub); }
+    .history-item { padding: 10px 0; border-bottom: 1px solid var(--color-border-light); font-size: 13px; }
+  </style>
+</head>
+<body data-admin-menu="vector-db" data-admin-submenu="문서 정보 관리" data-admin-page="document-management">
+  <div id="adminHeader"></div>
+  <div id="adminSidebar"></div>
+  <div class="main-wrap" id="mainWrap">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">문서 정보 관리</div>
+        <div class="breadcrumb-row">
+          <span>홈</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span>벡터 DB 관리</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span style="color:var(--color-text-main);">문서 정보 관리</span>
+        </div>
+      </div>
+
+      <div class="doc-layout">
+        <div class="admin-card">
+          <div class="admin-card-header">문서 목록</div>
+          <div class="admin-card-body">
+            <div class="filter-bar">
+              <select class="form-select" id="verifyFilter"><option value="">검증 상태 전체</option><option>검증대기</option><option>검증완료</option></select>
+              <select class="form-select" id="approveFilter"><option value="">승인 상태 전체</option><option>승인대기</option><option>승인</option><option>반려</option></select>
+              <input class="form-input" id="docSearch" placeholder="문서명 검색">
+            </div>
+            <table class="admin-table">
+              <thead><tr><th>문서명</th><th>업로드일</th><th>검증 상태</th><th>승인 상태</th></tr></thead>
+              <tbody id="docRows"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="detail-panel" id="detailPanel">
+          <div class="detail-header">
+            <strong id="detailTitle">문서 상세</strong>
+            <button class="modal-close" id="closeDetail">✕</button>
+          </div>
+          <div class="admin-card-body">
+            <div id="detailInfo"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0;">
+              <select class="form-select" id="detailVerify"><option>검증대기</option><option>검증완료</option></select>
+              <select class="form-select" id="detailApprove"><option>승인대기</option><option>승인</option><option>반려</option></select>
+            </div>
+            <div style="display:flex;gap:8px;justify-content:flex-end;margin-bottom:18px;">
+              <button class="btn-danger" id="rejectBtn"><i class="bi bi-x-circle"></i> 반려</button>
+              <button class="btn-primary" id="approveBtn"><i class="bi bi-check-circle"></i> 승인</button>
+            </div>
+            <div style="font-weight:500;margin-bottom:8px;">히스토리</div>
+            <div id="historyRows"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+    const docs = [
+      { name: 'AS 상담 스크립트 v3.xlsx', date: '2026-05-30', verify: '검증완료', approve: '승인대기', owner: '운영관리팀' },
+      { name: '블랙박스 FAQ 문서.csv', date: '2026-05-28', verify: '검증대기', approve: '승인대기', owner: '지식관리팀' },
+      { name: '내비게이션 설치 상담.pdf', date: '2026-05-26', verify: '검증완료', approve: '승인', owner: 'CS기획팀' },
+      { name: '제품 교환 정책.docx', date: '2026-05-21', verify: '검증완료', approve: '반려', owner: '품질관리팀' }
+    ];
+    let selected = null;
+
+    function badge(text) {
+      const cls = text === '승인' || text === '검증완료' ? 'badge-success' : text === '반려' ? 'badge-error' : 'badge-warning';
+      return `<span class="badge ${cls}">${text}</span>`;
+    }
+
+    function renderDocs() {
+      const keyword = document.getElementById('docSearch').value.trim();
+      const verify = document.getElementById('verifyFilter').value;
+      const approve = document.getElementById('approveFilter').value;
+      document.getElementById('docRows').innerHTML = docs
+        .filter((doc) => (!keyword || doc.name.includes(keyword)) && (!verify || doc.verify === verify) && (!approve || doc.approve === approve))
+        .map((doc, index) => `<tr data-index="${index}"><td>${doc.name}</td><td>${doc.date}</td><td>${badge(doc.verify)}</td><td>${badge(doc.approve)}</td></tr>`).join('');
+    }
+
+    function openDetail(index) {
+      selected = docs[index];
+      document.getElementById('detailTitle').textContent = selected.name;
+      document.getElementById('detailInfo').innerHTML = `
+        <div class="info-row"><div class="info-label">업로드일</div><div>${selected.date}</div></div>
+        <div class="info-row"><div class="info-label">담당 부서</div><div>${selected.owner}</div></div>
+        <div class="info-row"><div class="info-label">현재 상태</div><div>${badge(selected.verify)} ${badge(selected.approve)}</div></div>`;
+      document.getElementById('detailVerify').value = selected.verify;
+      document.getElementById('detailApprove').value = selected.approve;
+      document.getElementById('historyRows').innerHTML = [
+        '문서 업로드 완료',
+        `${selected.verify} 상태 반영`,
+        `${selected.approve} 검토 상태`
+      ].map((text) => `<div class="history-item"><i class="bi bi-clock-history" style="color:var(--color-primary);margin-right:6px;"></i>${text}</div>`).join('');
+      document.getElementById('detailPanel').classList.add('open');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderDocs();
+      ['docSearch', 'verifyFilter', 'approveFilter'].forEach((id) => document.getElementById(id).addEventListener('input', renderDocs));
+      document.getElementById('docRows').addEventListener('click', (event) => {
+        const row = event.target.closest('tr');
+        if (row) openDetail(Number(row.dataset.index));
+      });
+      document.getElementById('closeDetail').addEventListener('click', () => document.getElementById('detailPanel').classList.remove('open'));
+      document.getElementById('approveBtn').addEventListener('click', () => AdminToast.show('문서가 승인 처리됐습니다.'));
+      document.getElementById('rejectBtn').addEventListener('click', () => AdminConfirm.show({ title: '문서 반려', message: '선택 문서를 반려 처리하시겠습니까?', onConfirm: () => AdminToast.show('문서가 반려 처리됐습니다.') }));
+    });
+  </script>
+</body>
+</html>

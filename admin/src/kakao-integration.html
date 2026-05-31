@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>카카오톡 채널연동 서버 — 팅크웨어 챗봇 관리자</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+  <style>
+    body { background: var(--color-bg-page); }
+    .kakao-layout { display: grid; grid-template-columns: 360px 1fr; gap: 16px; align-items: start; }
+    .status-card { padding: 24px; background: white; border: 1px solid var(--color-border-light); border-radius: var(--radius-card); }
+    .status-icon { width: 56px; height: 56px; border-radius: 50%; background: rgba(82,196,26,0.12); color: var(--color-success); display:flex; align-items:center; justify-content:center; font-size:28px; margin-bottom:12px; }
+    .format-option { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px; border:1px solid var(--color-border-light); border-radius:var(--radius-card); margin-bottom:8px; }
+    .log-row { display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--color-border-light); font-size:13px; }
+  </style>
+</head>
+<body data-admin-menu="chat" data-admin-submenu="카카오톡 채널연동 서버" data-admin-page="kakao-integration">
+  <div id="adminHeader"></div>
+  <div id="adminSidebar"></div>
+  <div class="main-wrap" id="mainWrap">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">카카오톡 채널연동 서버</div>
+        <div class="breadcrumb-row">
+          <span>홈</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span>채팅 관리</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span style="color:var(--color-text-main);">카카오톡 채널연동 서버</span>
+        </div>
+      </div>
+
+      <div class="kakao-layout">
+        <div class="status-card">
+          <div class="status-icon"><i class="bi bi-chat-dots-fill"></i></div>
+          <div style="font-size:18px;font-weight:700;margin-bottom:4px;">연결됨</div>
+          <div style="font-size:13px;color:var(--color-text-sub);margin-bottom:18px;">마지막 응답: 2026-05-31 15:42:18</div>
+          <div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:98%;background:var(--color-success);"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--color-text-sub);"><span>응답 성공률</span><strong>98%</strong></div>
+          <button class="btn-primary btn-full" id="testBtn" style="margin-top:20px;"><i class="bi bi-lightning-charge"></i> 연결 테스트</button>
+        </div>
+
+        <div>
+          <div class="admin-card">
+            <div class="admin-card-header">Webhook 설정</div>
+            <div class="admin-card-body">
+              <label style="font-size:13px;color:var(--color-text-sub);">Webhook URL</label>
+              <div style="display:flex;gap:8px;margin-top:6px;">
+                <input class="form-input" id="webhookUrl" value="https://chatbot.example.com/kakao/webhook">
+                <button class="btn-primary" id="saveWebhookBtn"><i class="bi bi-save"></i> 저장</button>
+              </div>
+              <div style="font-size:12px;color:var(--color-text-sub);margin-top:8px;">카카오톡 채널 관리자센터의 스킬 서버 URL과 동일하게 유지합니다.</div>
+            </div>
+          </div>
+
+          <div class="admin-card" style="margin-top:16px;">
+            <div class="admin-card-header">응답 포맷 설정</div>
+            <div class="admin-card-body">
+              <div class="format-option">
+                <div><strong>텍스트 응답</strong><div style="font-size:12px;color:var(--color-text-sub);">기본 답변 메시지 전송</div></div>
+                <label class="toggle-switch" data-toggle-label="텍스트 응답"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="format-option">
+                <div><strong>빠른 답장 버튼</strong><div style="font-size:12px;color:var(--color-text-sub);">카카오톡 2.0 quickReplies 포함</div></div>
+                <label class="toggle-switch" data-toggle-label="빠른 답장"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+              <div class="format-option">
+                <div><strong>오류 fallback</strong><div style="font-size:12px;color:var(--color-text-sub);">응답 실패 시 안내 문구 전송</div></div>
+                <label class="toggle-switch" data-toggle-label="오류 fallback"><input type="checkbox" checked><span class="toggle-slider"></span></label>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-card" style="margin-top:16px;">
+            <div class="admin-card-header">최근 요청 로그</div>
+            <div class="admin-card-body">
+              <div class="log-row"><span>kakao-2381 · 업데이트 문의</span><span class="badge badge-success">200</span></div>
+              <div class="log-row"><span>kakao-1904 · AS 센터 문의</span><span class="badge badge-success">200</span></div>
+              <div class="log-row"><span>kakao-4420 · 응답 포맷 검증</span><span class="badge badge-warning">대기</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('saveWebhookBtn').addEventListener('click', () => AdminToast.show('Webhook URL이 저장됐습니다.'));
+      document.getElementById('testBtn').addEventListener('click', () => {
+        const btn = document.getElementById('testBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner" style="width:14px;height:14px;border-color:rgba(255,255,255,0.45);border-top-color:white;"></span> 테스트 중';
+        setTimeout(() => {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="bi bi-lightning-charge"></i> 연결 테스트';
+          AdminToast.show('카카오톡 채널 연결 테스트가 성공했습니다.');
+        }, 900);
+      });
+    });
+  </script>
+</body>
+</html>

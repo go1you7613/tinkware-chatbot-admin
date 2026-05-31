@@ -1,0 +1,8 @@
+.DS_Store
+**/.DS_Store
+~$*.xlsx
+**/~$*.xlsx
+.gstack/
+admin/docs/*.xlsx
+admin/docs/ref_images/
+admin/prototype/.qa-screenshots/

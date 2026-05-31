@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ 생성 관리 — 팅크웨어 챗봇 관리자</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+
+  <style>
+    body { background: var(--color-bg-page); }
+
+    /* ── 생성 모드 토글 ── */
+    .mode-tabs {
+      display: inline-flex;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-base);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .mode-tab {
+      padding: 7px 20px;
+      font-size: 14px;
+      cursor: pointer;
+      color: var(--color-text-sub);
+      background: white;
+      display: flex; align-items: center; gap: 6px;
+      transition: background 0.15s, color 0.15s;
+      user-select: none;
+      border: none;
+    }
+    .mode-tab:first-child { border-right: 1px solid var(--color-border); }
+    .mode-tab.active { background: var(--color-primary); color: white; }
+
+    /* ── 생성 설정 2열 레이아웃 ── */
+    .gen-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 16px;
+      align-items: start;
+    }
+
+    /* ── 슬라이더 그룹 ── */
+    .slider-group { display: flex; flex-direction: column; gap: 16px; }
+    .slider-item label {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 13px; font-weight: 500; color: var(--color-text-main);
+      margin-bottom: 6px;
+    }
+    .slider-value {
+      font-size: 13px; font-weight: 700;
+      color: var(--color-primary);
+      background: var(--color-primary-light);
+      border-radius: var(--radius-base);
+      padding: 1px 8px;
+      min-width: 36px; text-align: center;
+    }
+    .slider-range {
+      display: flex; justify-content: space-between;
+      font-size: 11px; color: var(--color-text-disabled);
+      margin-top: 3px;
+    }
+
+    /* ── 증분 전용 설정 박스 ── */
+    .incr-only {
+      display: none;
+      background: rgba(24,144,255,0.04);
+      border: 1px solid rgba(24,144,255,0.2);
+      border-radius: var(--radius-card);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .incr-only.show { display: block; }
+    .incr-only-title {
+      font-size: 12px; font-weight: 500; color: var(--color-primary);
+      margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+    }
+
+    /* ── LLM 컨텍스트 컬럼 체크박스 ── */
+    .context-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .context-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 12px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-base);
+      font-size: 13px; cursor: pointer;
+      user-select: none; transition: all 0.15s;
+      background: white; color: var(--color-text-main);
+    }
+    .context-chip input { accent-color: var(--color-primary); cursor: pointer; }
+    .context-chip:has(input:checked) {
+      border-color: var(--color-primary);
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+    }
+
+    /* ── 출력 설정 탭 ── */
+    .output-tabs {
+      display: flex;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-base);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+    .output-tab {
+      flex: 1; padding: 6px; text-align: center;
+      font-size: 13px; cursor: pointer;
+      color: var(--color-text-sub); background: #FAFAFA;
+      border: none; transition: all 0.15s;
+    }
+    .output-tab:first-child { border-right: 1px solid var(--color-border); }
+    .output-tab.active { background: var(--color-primary); color: white; font-weight: 500; }
+
+    /* ── FAQ 생성 시작 버튼 ── */
+    .btn-generate {
+      width: 100%; padding: 12px;
+      background: var(--color-primary);
+      color: white; border: none;
+      border-radius: var(--radius-base);
+      font-size: 15px; font-family: var(--font-family); font-weight: 500;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background 0.2s; box-shadow: var(--shadow-btn);
+    }
+    .btn-generate:hover { background: var(--color-primary-dark); }
+    .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ── 진행 상태 ── */
+    .gen-progress-box {
+      display: none;
+      padding: 20px;
+      background: #FAFAFA;
+      border: 1px solid var(--color-border-light);
+      border-radius: var(--radius-card);
+      margin-top: 12px;
+    }
+    .gen-progress-box.show { display: block; }
+    .gen-progress-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .gen-progress-title { font-size: 14px; font-weight: 500; }
+    .gen-log {
+      font-size: 12px; color: var(--color-text-sub);
+      font-family: monospace;
+      max-height: 120px; overflow-y: auto;
+      background: white; border: 1px solid var(--color-border-light);
+      border-radius: var(--radius-base); padding: 8px 12px;
+      margin-top: 8px;
+    }
+    .gen-log-line { padding: 1px 0; }
+    .gen-log-line.ok    { color: var(--color-success); }
+    .gen-log-line.info  { color: var(--color-primary);  }
+    .gen-log-line.warn  { color: var(--color-warning);  }
+
+    /* ── 검토·승인 탭 ── */
+    .review-layout {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 16px;
+      align-items: start;
+    }
+    .review-layout.single { grid-template-columns: 1fr; }
+
+    .type-badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 10px; border-radius: 10px;
+      font-size: 11px; font-weight: 600;
+    }
+    .type-badge.NEW    { background: rgba(82,196,26,0.12); color: var(--color-success); }
+    .type-badge.UPDATE { background: rgba(24,144,255,0.12); color: var(--color-primary); }
+    .type-badge.SKIP   { background: rgba(0,0,0,0.06);      color: var(--color-text-sub); }
+
+    .approval-badge {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 2px 8px; border-radius: 10px;
+      font-size: 11px; font-weight: 500;
+    }
+    .approval-badge.approved { background: rgba(82,196,26,0.12); color: var(--color-success); }
+    .approval-badge.rejected { background: rgba(255,77,79,0.12); color: var(--color-error); }
+    .approval-badge.pending  { background: rgba(250,173,20,0.12); color: var(--color-warning); }
+
+    /* 검토 상세 패널 */
+    .review-detail {
+      background: white;
+      border: 1px solid var(--color-border-light);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      display: none;
+    }
+    .review-detail.open { display: block; }
+    .review-detail-header {
+      padding: 14px 16px;
+      background: #FAFAFA;
+      border-bottom: 1px solid var(--color-border-light);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .qa-edit-box {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-base);
+      padding: 10px 12px;
+      font-size: 13px; line-height: 1.7;
+      min-height: 60px;
+      outline: none;
+      cursor: text;
+      transition: border-color 0.2s;
+    }
+    .qa-edit-box:focus { border-color: var(--color-primary); box-shadow: 0 0 0 2px rgba(24,144,255,0.2); }
+
+    /* ── 컬렉션 조회 탭 ── */
+    .collection-card {
+      border: 1px solid var(--color-border-light);
+      border-radius: var(--radius-card);
+      padding: 16px 20px;
+      display: flex; align-items: center; gap: 16px;
+      background: white;
+      cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s;
+      margin-bottom: 8px;
+    }
+    .collection-card:hover { border-color: var(--color-primary); box-shadow: 0 2px 8px rgba(24,144,255,0.1); }
+    .collection-card.active { border-color: var(--color-primary); background: var(--color-primary-light); }
+    .collection-icon { font-size: 24px; color: var(--color-primary); flex-shrink: 0; }
+    .collection-info { flex: 1; }
+    .collection-name { font-size: 14px; font-weight: 500; margin-bottom: 3px; }
+    .collection-meta { font-size: 12px; color: var(--color-text-sub); }
+    .collection-count { font-size: 18px; font-weight: 700; color: var(--color-primary); text-align: right; }
+    .collection-count-label { font-size: 11px; color: var(--color-text-sub); text-align: right; }
+
+    .doc-search-result {
+      display: flex; flex-direction: column; gap: 8px; margin-top: 12px;
+    }
+    .doc-item {
+      padding: 12px 16px;
+      background: #FAFAFA;
+      border: 1px solid var(--color-border-light);
+      border-radius: var(--radius-base);
+      font-size: 13px; line-height: 1.6;
+    }
+    .doc-meta { font-size: 11px; color: var(--color-text-sub); margin-top: 4px; display: flex; gap: 12px; }
+  </style>
+</head>
+<body data-admin-menu="vector-db" data-admin-submenu="FAQ 생성 관리" data-admin-page="faq-management">
+
+  <div id="adminHeader"></div>
+  <div id="adminSidebar"></div>
+
+  <div class="main-wrap" id="mainWrap">
+    <div class="page-content">
+
+      <!-- 페이지 헤더 -->
+      <div class="page-header">
+        <div class="page-title">FAQ 생성 관리</div>
+        <div class="breadcrumb-row">
+          <span>홈</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span>벡터 DB 관리</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span style="color:var(--color-text-main);">FAQ 생성 관리</span>
+        </div>
+      </div>
+
+      <!-- 탭: FAQ 생성 | 검토·승인 | 컬렉션 조회 -->
+      <div class="admin-tabs" id="mainTabs">
+        <div class="admin-tab active" data-tab="generate">FAQ 생성</div>
+        <div class="admin-tab" data-tab="review">검토·승인 <span class="tab-count" id="pendingCount">47</span></div>
+        <div class="admin-tab" data-tab="collection">컬렉션 조회</div>
+      </div>
+
+      <!-- ══ FAQ 생성 탭 ══ -->
+      <div class="tab-pane active" id="pane-generate">
+        <div class="gen-layout">
+
+          <!-- 좌측: 생성 설정 -->
+          <div class="admin-card">
+            <div class="admin-card-header">생성 설정</div>
+            <div class="admin-card-body">
+
+              <!-- 생성 모드 -->
+              <div style="margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:500;color:var(--color-text-sub);margin-bottom:8px;">생성 모드</div>
+                <div class="mode-tabs">
+                  <button type="button" class="mode-tab active" id="modeTotal" onclick="setMode('total')">
+                    <i class="bi bi-arrow-repeat"></i> 전체 재생성
+                  </button>
+                  <button type="button" class="mode-tab" id="modeIncr" onclick="setMode('incr')">
+                    <i class="bi bi-plus-circle"></i> 증분 업데이트
+                  </button>
+                </div>
+              </div>
+
+              <!-- 증분 전용: 임계값 슬라이더 -->
+              <div class="incr-only" id="incrOnly">
+                <div class="incr-only-title">
+                  <i class="bi bi-sliders"></i> 증분 업데이트 임계값
+                </div>
+                <div class="slider-group">
+                  <div class="slider-item">
+                    <label>
+                      SKIP 임계값 <small style="font-weight:400;color:var(--color-text-sub);">(이 유사도 이상이면 중복 처리)</small>
+                      <span class="slider-value" id="skipVal">0.92</span>
+                    </label>
+                    <input type="range" class="form-range" min="70" max="100" value="92"
+                      oninput="document.getElementById('skipVal').textContent=(this.value/100).toFixed(2)">
+                    <div class="slider-range"><span>0.70</span><span>1.00</span></div>
+                  </div>
+                  <div class="slider-item">
+                    <label>
+                      UPDATE 임계값 <small style="font-weight:400;color:var(--color-text-sub);">(이 유사도 이상이면 보완 처리)</small>
+                      <span class="slider-value" id="updateVal">0.75</span>
+                    </label>
+                    <input type="range" class="form-range" min="50" max="95" value="75"
+                      oninput="document.getElementById('updateVal').textContent=(this.value/100).toFixed(2)">
+                    <div class="slider-range"><span>0.50</span><span>0.95</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 소스 컬렉션 -->
+              <div style="margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:500;color:var(--color-text-sub);margin-bottom:8px;">소스 컬렉션</div>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <select class="form-select" style="height:36px;">
+                    <option>as_kms</option>
+                    <option>faq_approved</option>
+                    <option>cs_scripts</option>
+                  </select>
+                  <button class="btn-default btn-sm" title="새로고침">
+                    <i class="bi bi-arrow-clockwise"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- LLM 컨텍스트 컬럼 -->
+              <div style="margin-bottom:20px;">
+                <div style="font-size:13px;font-weight:500;color:var(--color-text-sub);margin-bottom:8px;">
+                  LLM 컨텍스트 컬럼 <small style="font-weight:400;">(미선택 시 전체)</small>
+                </div>
+                <div class="context-chips">
+                  <label class="context-chip"><input type="checkbox" checked> 모델명</label>
+                  <label class="context-chip"><input type="checkbox" checked> 상세증상</label>
+                  <label class="context-chip"><input type="checkbox" checked> 처리상세</label>
+                  <label class="context-chip"><input type="checkbox"> 상담유형</label>
+                  <label class="context-chip"><input type="checkbox"> 문의내용</label>
+                </div>
+              </div>
+
+              <!-- 클러스터링 설정 -->
+              <div>
+                <div style="font-size:13px;font-weight:500;color:var(--color-text-sub);margin-bottom:12px;">클러스터링</div>
+                <div class="slider-group">
+                  <div class="slider-item">
+                    <label>클러스터 수 <span class="slider-value" id="clusterVal">100</span></label>
+                    <input type="range" class="form-range" min="5" max="100" value="100"
+                      oninput="document.getElementById('clusterVal').textContent=this.value">
+                    <div class="slider-range"><span>5</span><span>100</span></div>
+                  </div>
+                  <div class="slider-item">
+                    <label>클러스터당 대표 문서 수 <span class="slider-value" id="docPerClusterVal">15</span></label>
+                    <input type="range" class="form-range" min="3" max="30" value="15"
+                      oninput="document.getElementById('docPerClusterVal').textContent=this.value">
+                    <div class="slider-range"><span>3</span><span>30</span></div>
+                  </div>
+                  <div class="slider-item">
+                    <label>클러스터 Q/A 수 <span class="slider-value" id="qaPerClusterVal">3</span></label>
+                    <input type="range" class="form-range" min="1" max="10" value="3"
+                      oninput="document.getElementById('qaPerClusterVal').textContent=this.value">
+                    <div class="slider-range"><span>1</span><span>10</span></div>
+                  </div>
+                  <div class="slider-item">
+                    <label>Q/A 생성 최소 문서 수 <span class="slider-value" id="minDocVal">2</span></label>
+                    <input type="range" class="form-range" min="1" max="10" value="2"
+                      oninput="document.getElementById('minDocVal').textContent=this.value">
+                    <div class="slider-range"><span>1</span><span>10</span></div>
+                  </div>
+                  <div class="slider-item">
+                    <label>
+                      중복 제거 기준값 <small style="font-weight:400;color:var(--color-text-sub);">(동일 주제 내)</small>
+                      <span class="slider-value" id="dedupeVal">0.85</span>
+                    </label>
+                    <input type="range" class="form-range" min="60" max="100" value="85"
+                      oninput="document.getElementById('dedupeVal').textContent=(this.value/100).toFixed(2)">
+                    <div class="slider-range"><span>0.60</span><span>1.00</span></div>
+                  </div>
+                  <div class="slider-item">
+                    <label>
+                      유사 병합 기준값 <small style="font-weight:400;color:var(--color-text-sub);">(주제 간)</small>
+                      <span class="slider-value" id="mergeVal">0.70</span>
+                    </label>
+                    <input type="range" class="form-range" min="50" max="95" value="70"
+                      oninput="document.getElementById('mergeVal').textContent=(this.value/100).toFixed(2)">
+                    <div class="slider-range"><span>0.50</span><span>0.95</span></div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- 우측: 출력 설정 + 생성 버튼 -->
+          <div style="display:flex;flex-direction:column;gap:12px;">
+
+            <!-- 출력 설정 -->
+            <div class="admin-card">
+              <div class="admin-card-header">출력 설정</div>
+              <div class="admin-card-body">
+                <div style="font-size:13px;font-weight:500;color:var(--color-text-sub);margin-bottom:8px;">대상 컬렉션</div>
+                <div class="output-tabs" id="outputTabs">
+                  <button type="button" class="output-tab" onclick="setOutputMode('existing')">기존 컬렉션</button>
+                  <button type="button" class="output-tab active" onclick="setOutputMode('new')">새 이름 입력</button>
+                </div>
+                <div id="outputExisting" style="display:none;">
+                  <select class="form-select" style="height:36px;">
+                    <option>faq_approved</option>
+                    <option>as_kms</option>
+                    <option>cs_scripts</option>
+                  </select>
+                  <div style="font-size:12px;color:var(--color-text-sub);margin-top:6px;">기존 컬렉션에 추가 적재됩니다.</div>
+                </div>
+                <div id="outputNew">
+                  <input type="text" class="form-input" value="faq_collection" style="height:36px;"
+                    placeholder="컬렉션명 (영문 소문자, 숫자, _)">
+                  <div style="font-size:12px;color:var(--color-text-sub);margin-top:6px;">허용 문자: 영문 소문자, 숫자, 언더스코어(_)</div>
+                </div>
+
+                <!-- 벡터 모드 -->
+                <div style="margin-top:14px;">
+                  <div style="font-size:13px;font-weight:500;color:var(--color-text-sub);margin-bottom:6px;">벡터 모드</div>
+                  <select class="form-select" style="height:36px;">
+                    <option selected>Hybrid (권장)</option>
+                    <option>Dense only</option>
+                    <option>Sparse only</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- LLM 설정 -->
+            <div class="admin-card">
+              <div class="admin-card-header">LLM 설정 <span style="font-size:12px;font-weight:400;color:var(--color-text-sub);">(선택)</span></div>
+              <div class="admin-card-body" style="display:flex;flex-direction:column;gap:10px;">
+                <div>
+                  <label style="font-size:12px;color:var(--color-text-sub);display:block;margin-bottom:4px;">프로바이더</label>
+                  <select class="form-select" style="height:36px;" id="llmProvider" onchange="updateModelOptions()">
+                    <option>Ollama (로컬/사내)</option>
+                    <option>Groq (외부 API)</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size:12px;color:var(--color-text-sub);display:block;margin-bottom:4px;">모델명</label>
+                  <select class="form-select" style="height:36px;" id="llmModel">
+                    <option>gemma4:e4b</option>
+                    <option>llama3:8b</option>
+                    <option>mistral:7b</option>
+                    <option>phi3:mini</option>
+                  </select>
+                </div>
+                <div id="ollamaUrlRow">
+                  <label style="font-size:12px;color:var(--color-text-sub);display:block;margin-bottom:4px;">Ollama URL</label>
+                  <select class="form-select" style="height:36px;">
+                    <option>사내서버 (192.168.60.11)</option>
+                    <option>로컬 (127.0.0.1:11434)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 생성 시작 버튼 -->
+            <button class="btn-generate" id="genStartBtn" onclick="startGeneration()">
+              <i class="bi bi-stars"></i> FAQ 생성 시작
+            </button>
+
+            <!-- 진행 상태 -->
+            <div class="gen-progress-box" id="genProgress">
+              <div class="gen-progress-header">
+                <span class="gen-progress-title" id="genProgressTitle">
+                  <span class="spinner" style="width:14px;height:14px;border-width:2px;vertical-align:middle;margin-right:6px;"></span>
+                  생성 중...
+                </span>
+                <button class="btn-default btn-sm" onclick="cancelGeneration()">
+                  <i class="bi bi-stop-circle"></i> 취소
+                </button>
+              </div>
+              <div class="progress-bar-wrap" style="height:6px;">
+                <div class="progress-bar-fill" id="genBar" style="width:0%;"></div>
+              </div>
+              <div class="gen-log" id="genLog"></div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ 검토·승인 탭 ══ -->
+      <div class="tab-pane" id="pane-review">
+
+        <!-- 툴바 -->
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div style="display:flex;gap:6px;" id="reviewFilterTabs">
+            <div class="filter-tab active" data-filter="all">전체 <span id="rAll">47</span></div>
+            <div class="filter-tab" data-filter="NEW">NEW <span id="rNew">18</span></div>
+            <div class="filter-tab" data-filter="UPDATE">UPDATE <span id="rUpdate">22</span></div>
+            <div class="filter-tab" data-filter="SKIP">SKIP <span id="rSkip">7</span></div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn-primary btn-sm" onclick="bulkApprove()">
+              <i class="bi bi-check-all"></i> 선택 승인
+            </button>
+            <button class="btn-default btn-sm" onclick="applyToQdrant()">
+              <i class="bi bi-database-up"></i> Qdrant 반영
+            </button>
+          </div>
+        </div>
+
+        <div class="review-layout" id="reviewLayout">
+          <!-- 목록 -->
+          <div>
+            <div class="admin-card">
+              <div class="result-grid-wrap">
+                <table class="result-grid" id="reviewTable">
+                  <thead>
+                    <tr>
+                      <th style="width:36px;"><input type="checkbox" id="rCheckAll" onchange="toggleReviewCheck(this.checked)" style="accent-color:var(--color-primary);"></th>
+                      <th style="width:70px;">유형</th>
+                      <th>질문</th>
+                      <th style="width:100px;">출처 문서</th>
+                      <th style="width:80px;">승인 상태</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reviewBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 상세 패널 -->
+          <div class="review-detail" id="reviewDetail">
+            <div class="review-detail-header">
+              <span style="font-size:14px;font-weight:500;">Q&A 상세</span>
+              <button style="background:none;border:none;cursor:pointer;color:var(--color-text-sub);font-size:18px;" onclick="closeReviewDetail()">
+                <i class="bi bi-x-lg"></i>
+              </button>
+            </div>
+            <div style="padding:16px;" id="reviewDetailBody"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ 컬렉션 조회 탭 ══ -->
+      <div class="tab-pane" id="pane-collection">
+        <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;align-items:start;">
+
+          <!-- 컬렉션 목록 -->
+          <div>
+            <div style="font-size:13px;font-weight:500;color:var(--color-text-sub);margin-bottom:8px;">컬렉션 목록</div>
+            <div id="collectionList"></div>
+          </div>
+
+          <!-- 문서 검색 영역 -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <span id="selectedCollName">컬렉션을 선택하세요</span>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <span style="font-size:12px;color:var(--color-text-sub);" id="collDocCount"></span>
+              </div>
+            </div>
+            <div class="admin-card-body">
+              <div style="display:flex;gap:8px;margin-bottom:12px;">
+                <input type="text" class="form-input" id="docSearchInput" placeholder="키워드로 유사 문서 검색..."
+                  style="height:36px;" onkeydown="if(event.key==='Enter')searchDocs()">
+                <button class="btn-primary btn-sm" onclick="searchDocs()"><i class="bi bi-search"></i> 검색</button>
+              </div>
+              <div id="docSearchResult">
+                <div style="text-align:center;padding:40px;color:var(--color-text-disabled);">
+                  <i class="bi bi-collection" style="font-size:36px;display:block;margin-bottom:8px;"></i>
+                  컬렉션을 선택하고 키워드를 입력해 검색하세요.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 모달: Qdrant 반영 확인 -->
+  <div class="modal-overlay" id="modalQdrant">
+    <div class="modal-box" style="width:440px;">
+      <div class="modal-header">
+        <span>Qdrant 반영</span>
+        <button class="modal-close" data-modal-close="modalQdrant">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="display:flex;gap:12px;margin-bottom:16px;">
+          <i class="bi bi-database-up" style="font-size:24px;color:var(--color-primary);flex-shrink:0;margin-top:2px;"></i>
+          <div>
+            <div style="font-weight:500;margin-bottom:6px;">승인된 FAQ를 벡터 DB에 최종 저장합니다.</div>
+            <div style="font-size:13px;color:var(--color-text-sub);line-height:1.6;">
+              · 승인 완료된 FAQ만 저장 대상입니다.<br>
+              · 저장 즉시 챗봇 AI 답변 검색 대상에 포함됩니다.<br>
+              · 저장 대상 컬렉션을 선택하세요.
+            </div>
+          </div>
+        </div>
+        <div>
+          <label style="font-size:13px;color:var(--color-text-sub);display:block;margin-bottom:4px;">저장 대상 컬렉션</label>
+          <select class="form-select">
+            <option>faq_approved</option>
+            <option>as_kms</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-default btn-sm" data-modal-close="modalQdrant">취소</button>
+        <button class="btn-primary btn-sm" onclick="AdminModal.close('modalQdrant');AdminToast.show('Qdrant에 FAQ가 반영됐습니다.');">
+          <i class="bi bi-database-up"></i> 반영
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+  /* ── 더미 데이터 ── */
+  const REVIEW_DATA = [
+    { id:1, type:'NEW',    q:'블랙박스 전원이 켜지지 않을 때 어떻게 해야 하나요?',  a:'블랙박스 전원 불량 시 제품 초기화 또는 AS 접수를 권장합니다.',                 src:'AS_매뉴얼_v2.pdf', approval:'pending'  },
+    { id:2, type:'UPDATE', q:'블랙박스 영상이 저장되지 않는 원인은 무엇인가요?',    a:'메모리 카드 불량 또는 전원 공급 문제일 수 있습니다. SD카드를 교체해 보세요.',  src:'FAQ_DB_2025.xlsx', approval:'approved' },
+    { id:3, type:'NEW',    q:'주차 모드 설정 방법을 알려주세요.',                    a:'메뉴 → 주차 모드 → 활성화를 선택하고 감도를 설정하세요.',                      src:'AS_매뉴얼_v2.pdf', approval:'pending'  },
+    { id:4, type:'SKIP',   q:'블랙박스 화질이 흐릿한 이유는?',                      a:'렌즈 오염 또는 해상도 설정 문제입니다.',                                        src:'FAQ_DB_2025.xlsx', approval:'pending'  },
+    { id:5, type:'UPDATE', q:'GPS 신호가 잡히지 않는 경우 대처법은?',               a:'GPS 위성 수신이 어려운 환경일 수 있습니다. 실외에서 재시작해 보세요.',          src:'AS_매뉴얼_v2.pdf', approval:'rejected' },
+    { id:6, type:'NEW',    q:'야간 촬영 화질 개선 방법이 있나요?',                  a:'나이트 비전 모드를 활성화하거나 ISO 감도를 높여보세요.',                        src:'FAQ_DB_2025.xlsx', approval:'pending'  },
+    { id:7, type:'NEW',    q:'블랙박스 초기화하는 방법은?',                          a:'설정 메뉴에서 공장 초기화를 선택하거나 리셋 버튼을 3초 이상 누르세요.',        src:'AS_매뉴얼_v2.pdf', approval:'pending'  },
+    { id:8, type:'UPDATE', q:'SD카드 포맷 주기는 얼마나 되나요?',                   a:'2~4주 주기로 정기 포맷을 권장합니다.',                                          src:'FAQ_DB_2025.xlsx', approval:'approved' },
+  ];
+
+  let reviewFilter = 'all';
+  let selectedReviewId = null;
+  let genTimer = null;
+
+  /* ── 탭 전환 ── */
+  document.querySelectorAll('#mainTabs .admin-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#mainTabs .admin-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('pane-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  /* ── 생성 모드 ── */
+  function setMode(mode) {
+    document.getElementById('modeTotal').classList.toggle('active', mode === 'total');
+    document.getElementById('modeIncr').classList.toggle('active', mode === 'incr');
+    document.getElementById('incrOnly').classList.toggle('show', mode === 'incr');
+  }
+
+  /* ── 출력 모드 ── */
+  function setOutputMode(mode) {
+    document.querySelectorAll('#outputTabs .output-tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0 && mode === 'existing') || (i === 1 && mode === 'new'));
+    });
+    document.getElementById('outputExisting').style.display = mode === 'existing' ? 'block' : 'none';
+    document.getElementById('outputNew').style.display      = mode === 'new' ? 'block' : 'none';
+  }
+
+  /* ── LLM 모델 옵션 ── */
+  function updateModelOptions() {
+    const isGroq = document.getElementById('llmProvider').value.includes('Groq');
+    document.getElementById('ollamaUrlRow').style.display = isGroq ? 'none' : 'block';
+    const modelSel = document.getElementById('llmModel');
+    modelSel.innerHTML = isGroq
+      ? '<option>mixtral-8x7b</option><option>llama3-8b</option><option>gemma-7b</option>'
+      : '<option>gemma4:e4b</option><option>llama3:8b</option><option>mistral:7b</option><option>phi3:mini</option>';
+  }
+
+  /* ── FAQ 생성 시작 ── */
+  const GEN_LOGS = [
+    { t:300,  msg:'소스 컬렉션 연결 중... as_kms',      cls:'info' },
+    { t:700,  msg:'문서 클러스터링 시작 (k=100)',        cls:'info' },
+    { t:1200, msg:'클러스터 1~20 처리 완료',            cls:'ok'   },
+    { t:1800, msg:'클러스터 21~50 처리 완료',           cls:'ok'   },
+    { t:2400, msg:'클러스터 51~80 처리 완료',           cls:'ok'   },
+    { t:3000, msg:'LLM Q/A 생성 중... (gemma4:e4b)',   cls:'info' },
+    { t:3600, msg:'중복 제거 처리 중... (기준값: 0.85)', cls:'info' },
+    { t:4000, msg:'유사 병합 처리 중... (기준값: 0.70)', cls:'info' },
+    { t:4400, msg:'FAQ 47건 생성 완료 → 검토 대기 저장', cls:'ok'   },
+  ];
+
+  function startGeneration() {
+    document.getElementById('genStartBtn').disabled = true;
+    document.getElementById('genProgress').classList.add('show');
+    document.getElementById('genBar').style.width = '0%';
+    document.getElementById('genLog').innerHTML = '';
+
+    const total = GEN_LOGS[GEN_LOGS.length - 1].t;
+    let start = Date.now();
+
+    GEN_LOGS.forEach(({ t, msg, cls }) => {
+      setTimeout(() => {
+        const line = document.createElement('div');
+        line.className = 'gen-log-line ' + cls;
+        line.textContent = '[' + new Date().toLocaleTimeString() + '] ' + msg;
+        document.getElementById('genLog').appendChild(line);
+        document.getElementById('genLog').scrollTop = 9999;
+        document.getElementById('genBar').style.width = Math.round(t / total * 100) + '%';
+      }, t);
+    });
+
+    setTimeout(() => {
+      document.getElementById('genBar').style.width = '100%';
+      document.getElementById('genProgressTitle').innerHTML = '<i class="bi bi-check-circle-fill" style="color:var(--color-success);margin-right:6px;"></i>생성 완료 — FAQ 47건 생성됨';
+      document.getElementById('genStartBtn').disabled = false;
+      document.getElementById('pendingCount').textContent = '47';
+      AdminToast.show('FAQ 47건이 생성됐습니다. 검토·승인 탭에서 확인하세요.');
+    }, total + 200);
+  }
+
+  function cancelGeneration() {
+    AdminConfirm.show({
+      title: 'FAQ 생성 취소',
+      message: '생성을 취소하시겠습니까? 현재까지 생성된 결과는 검토 대기 상태로 저장됩니다.',
+      onConfirm: () => {
+        document.getElementById('genStartBtn').disabled = false;
+        document.getElementById('genProgressTitle').innerHTML = '<i class="bi bi-dash-circle" style="color:var(--color-warning);margin-right:6px;"></i>생성 취소됨';
+        AdminToast.show('생성이 취소됐습니다.', 'warning');
+      }
+    });
+  }
+
+  /* ── 검토·승인 ── */
+  function renderReview() {
+    const rows = reviewFilter === 'all' ? REVIEW_DATA : REVIEW_DATA.filter(r => r.type === reviewFilter);
+    document.getElementById('reviewBody').innerHTML = rows.map(r => `
+      <tr onclick="openReviewDetail(${r.id})" id="rRow${r.id}" ${selectedReviewId===r.id?'class="selected"':''} style="cursor:pointer;">
+        <td><input type="checkbox" style="accent-color:var(--color-primary);" onclick="event.stopPropagation()"></td>
+        <td><span class="type-badge ${r.type}">${r.type}</span></td>
+        <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.q}</td>
+        <td style="font-size:12px;color:var(--color-text-sub);">${r.src}</td>
+        <td>
+          <span class="approval-badge ${r.approval}">
+            ${r.approval==='approved'?'<i class="bi bi-check-lg"></i> 승인':r.approval==='rejected'?'<i class="bi bi-x-lg"></i> 거부':'<i class="bi bi-clock"></i> 대기'}
+          </span>
+        </td>
+      </tr>`).join('');
+  }
+
+  function openReviewDetail(id) {
+    selectedReviewId = id;
+    const r = REVIEW_DATA.find(x => x.id === id);
+    document.querySelectorAll('#reviewBody tr').forEach(tr => tr.classList.remove('selected'));
+    document.getElementById('rRow' + id)?.classList.add('selected');
+    document.getElementById('reviewLayout').classList.remove('single');
+    document.getElementById('reviewDetail').classList.add('open');
+    document.getElementById('reviewDetailBody').innerHTML = `
+      <div style="margin-bottom:14px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+          <span class="type-badge ${r.type}">${r.type}</span>
+          <span class="approval-badge ${r.approval}">
+            ${r.approval==='approved'?'승인':r.approval==='rejected'?'거부':'검토 대기'}
+          </span>
+          <span style="font-size:12px;color:var(--color-text-sub);margin-left:auto;">출처: ${r.src}</span>
+        </div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-size:12px;font-weight:500;color:var(--color-text-sub);margin-bottom:6px;">질문 (Q)</div>
+        <div class="qa-edit-box" contenteditable="true">${r.q}</div>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:500;color:var(--color-text-sub);margin-bottom:6px;">답변 (A)</div>
+        <div class="qa-edit-box" contenteditable="true" style="min-height:80px;">${r.a}</div>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-primary btn-sm" style="flex:1;" onclick="setApproval(${r.id},'approved')">
+          <i class="bi bi-check-lg"></i> 승인
+        </button>
+        <button class="btn-danger btn-sm" style="flex:1;" onclick="setApproval(${r.id},'rejected')">
+          <i class="bi bi-x-lg"></i> 거부
+        </button>
+      </div>`;
+  }
+
+  function setApproval(id, status) {
+    const r = REVIEW_DATA.find(x => x.id === id);
+    if (r) r.approval = status;
+    renderReview();
+    openReviewDetail(id);
+    AdminToast.show(`FAQ가 ${status==='approved'?'승인':'거부'}됐습니다.`);
+    const approvedCount = REVIEW_DATA.filter(x => x.approval === 'approved').length;
+    document.getElementById('pendingCount').textContent = REVIEW_DATA.filter(x => x.approval === 'pending').length;
+  }
+
+  function closeReviewDetail() {
+    selectedReviewId = null;
+    document.getElementById('reviewDetail').classList.remove('open');
+    document.getElementById('reviewLayout').classList.add('single');
+    document.querySelectorAll('#reviewBody tr').forEach(tr => tr.classList.remove('selected'));
+  }
+
+  function bulkApprove() {
+    const checked = document.querySelectorAll('#reviewBody input[type=checkbox]:checked');
+    if (!checked.length) { AdminToast.show('승인할 항목을 선택하세요.', 'warning'); return; }
+    AdminConfirm.show({
+      title: '일괄 승인',
+      message: `선택한 ${checked.length}건을 승인하시겠습니까?`,
+      onConfirm: () => { AdminToast.show(`${checked.length}건이 승인됐습니다.`); renderReview(); }
+    });
+  }
+
+  function applyToQdrant() { AdminModal.open('modalQdrant'); }
+
+  function toggleReviewCheck(v) {
+    document.querySelectorAll('#reviewBody input[type=checkbox]').forEach(el => el.checked = v);
+  }
+
+  // 필터 탭
+  document.querySelectorAll('#reviewFilterTabs .filter-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#reviewFilterTabs .filter-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      reviewFilter = tab.dataset.filter;
+      closeReviewDetail();
+      renderReview();
+    });
+  });
+
+  /* ── 컬렉션 조회 ── */
+  const COLLECTIONS = [
+    { name:'as_kms',       count:18430, updated:'2시간 전',  active:true  },
+    { name:'faq_approved', count:4200,  updated:'1일 전',   active:true  },
+    { name:'cs_scripts',   count:9810,  updated:'3일 전',   active:false },
+  ];
+
+  const SAMPLE_DOCS = [
+    '블랙박스 전원이 켜지지 않을 때 확인 사항과 AS 접수 방법을 안내합니다.',
+    '영상이 저장되지 않는 경우 SD카드 포맷 및 교체 방법을 설명합니다.',
+    '주차 모드 설정 및 충격 감도 조정 가이드입니다.',
+    'GPS 위성 수신 불량 시 대처 방법과 펌웨어 업데이트 안내입니다.',
+  ];
+
+  let selectedColl = null;
+
+  function renderCollections() {
+    document.getElementById('collectionList').innerHTML = COLLECTIONS.map(c => `
+      <div class="collection-card ${selectedColl===c.name?'active':''}" onclick="selectCollection('${c.name}')">
+        <i class="bi bi-database collection-icon" style="color:${c.active?'var(--color-primary)':'var(--color-text-disabled)'};"></i>
+        <div class="collection-info">
+          <div class="collection-name">${c.name}</div>
+          <div class="collection-meta">
+            <span class="${c.active?'':'text-muted'}" style="color:${c.active?'var(--color-success)':'var(--color-text-disabled)'};font-size:11px;">
+              ${c.active?'● 활성':'○ 비활성'}
+            </span>
+            · 업데이트 ${c.updated}
+          </div>
+        </div>
+        <div>
+          <div class="collection-count">${c.count.toLocaleString()}</div>
+          <div class="collection-count-label">문서</div>
+        </div>
+      </div>`).join('');
+  }
+
+  function selectCollection(name) {
+    selectedColl = name;
+    const c = COLLECTIONS.find(x => x.name === name);
+    document.getElementById('selectedCollName').textContent = name;
+    document.getElementById('collDocCount').textContent = c.count.toLocaleString() + '건';
+    document.getElementById('docSearchResult').innerHTML = `
+      <div style="text-align:center;padding:20px;color:var(--color-text-disabled);">
+        <i class="bi bi-search" style="font-size:24px;display:block;margin-bottom:6px;"></i>
+        키워드를 입력해 유사 문서를 검색하세요.
+      </div>`;
+    renderCollections();
+  }
+
+  function searchDocs() {
+    const q = document.getElementById('docSearchInput').value.trim();
+    if (!q || !selectedColl) { AdminToast.show('컬렉션을 선택하고 키워드를 입력하세요.', 'warning'); return; }
+    const results = SAMPLE_DOCS.filter(() => Math.random() > 0.3);
+    document.getElementById('docSearchResult').innerHTML = results.length === 0
+      ? '<div style="text-align:center;padding:20px;color:var(--color-text-disabled);">검색 결과가 없습니다.</div>'
+      : `<div style="font-size:12px;color:var(--color-text-sub);margin-bottom:8px;">검색 결과 ${results.length}건</div>
+         <div class="doc-search-result">
+           ${results.map((doc, i) => `
+             <div class="doc-item">
+               ${doc}
+               <div class="doc-meta">
+                 <span><i class="bi bi-file-earmark"></i> ${selectedColl}_${String(i+1).padStart(4,'0')}</span>
+                 <span>유사도: ${(0.75 + Math.random()*0.2).toFixed(3)}</span>
+               </div>
+             </div>`).join('')}
+         </div>`;
+  }
+
+  /* ── 필터 탭 스타일 (재활용) ── */
+  const filterTabStyle = `
+    .filter-tab { padding:5px 14px;border:1px solid var(--color-border);border-radius:var(--radius-base);
+      font-size:13px;color:var(--color-text-sub);cursor:pointer;background:white;transition:all .15s; }
+    .filter-tab.active { border-color:var(--color-primary);color:var(--color-primary);background:var(--color-primary-light);font-weight:500; }
+    .result-grid { width:100%;border-collapse:collapse;font-size:13px; }
+    .result-grid th { background:#FAFAFA;color:var(--color-text-sub);font-weight:500;padding:10px 14px;
+      text-align:left;border-bottom:1px solid var(--color-border-light);white-space:nowrap; }
+    .result-grid td { padding:10px 14px;border-bottom:1px solid var(--color-border-light); }
+    .result-grid tr.selected td { background:var(--color-primary-light); }
+  `;
+  const styleEl = document.createElement('style');
+  styleEl.textContent = filterTabStyle;
+  document.head.appendChild(styleEl);
+
+  /* ── 초기화 ── */
+  renderReview();
+  renderCollections();
+  </script>
+</body>
+</html>

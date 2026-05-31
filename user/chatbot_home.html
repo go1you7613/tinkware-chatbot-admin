@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>팅크웨어 AI Chat – 홈</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/chatbot_home.css">
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- ====== STICKY HEADER ====== -->
+  <div class="sticky-header">
+
+    <!-- Hero Image (배너 이미지 영역) -->
+    <div class="hero-image"></div>
+
+    <!-- Header Bar (로고 + 닫기 버튼) -->
+    <div class="header-bar">
+      <div class="header-inner">
+        <div class="header-logo-group">
+          <img class="logo-thinkware" src="image/logo.png" alt="THINKWARE">
+        </div>
+        <!-- 닫기 버튼 (Phosphor Icons / X) -->
+        <div class="header-close" role="button" aria-label="닫기">
+          <svg viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /sticky-header -->
+
+  <!-- ====== SCROLL CONTENT ====== -->
+  <div class="scroll-content">
+
+    <!-- 메인 타이틀 -->
+    <div class="main-title">
+      <h1>
+        <span class="t-bold">팅크웨어 AI Chat</span><span class="t-regular">과</span><br>
+        <span class="t-regular">대화를 시작해볼까요?</span>
+      </h1>
+    </div>
+
+    <!-- 서브 타이틀 -->
+    <p class="main-subtitle">
+      제품 추천부터 AS예약까지<br>무엇이든 물어보세요.
+    </p>
+
+    <!-- 추천 질문 목록 (5개) -->
+    <div class="suggestions-wrap">
+
+      <div class="suggestion-item">
+        <span class="sparkle-icon">
+          <img src="image/sparkle.png" alt="" aria-hidden="true">
+        </span>
+        <span class="suggestion-text">QXD5000 블랙박스 특징 알려주세요</span>
+      </div>
+
+      <div class="suggestion-item">
+        <span class="sparkle-icon">
+          <img src="image/sparkle.png" alt="" aria-hidden="true">
+        </span>
+        <span class="suggestion-text">블랙박스 방문 AS 예약하기</span>
+      </div>
+
+      <div class="suggestion-item">
+        <span class="sparkle-icon">
+          <img src="image/sparkle.png" alt="" aria-hidden="true">
+        </span>
+        <span class="suggestion-text">가까운 장착점 찾아주세요</span>
+      </div>
+
+      <div class="suggestion-item">
+        <span class="sparkle-icon">
+          <img src="image/sparkle.png" alt="" aria-hidden="true">
+        </span>
+        <span class="suggestion-text">네비게이션 지도 업데이트 방법</span>
+      </div>
+
+      <div class="suggestion-item">
+        <span class="sparkle-icon">
+          <img src="image/sparkle.png" alt="" aria-hidden="true">
+        </span>
+        <span class="suggestion-text">블랙박스 주차 녹화 설정 방법</span>
+      </div>
+
+    </div><!-- /suggestions-wrap -->
+
+    <!-- 섹션: 내 제품 -->
+    <div class="section-label product-section-label">내 제품</div>
+
+    <!-- 로그인 유도 카드 -->
+    <div class="login-card">
+      <div class="login-card-text">
+        로그인을 하시면<br>보유 제품을 확인할 수 있어요
+      </div>
+      <div class="login-btn" role="button">
+        <span>로그인</span>
+      </div>
+    </div>
+
+    <!-- 섹션: 고객지원 서비스 -->
+    <div class="section-label">고객지원 서비스가 필요하신가요?</div>
+
+    <!-- 고객지원 2×2 그리드 -->
+    <div class="support-grid">
+
+      <div class="support-card">
+        <div class="support-icon-ph"></div>
+        <span class="support-text">방문 AS 예약하기</span>
+      </div>
+
+      <div class="support-card">
+        <div class="support-icon-ph"></div>
+        <span class="support-text">서비스센터 찾기</span>
+      </div>
+
+      <div class="support-card">
+        <div class="support-icon-ph"></div>
+        <span class="support-text">대리점·장착점 찾기</span>
+      </div>
+
+      <div class="support-card">
+        <div class="support-icon-ph"></div>
+        <span class="support-text support-text-tight">예약 확인·변경·취소</span>
+      </div>
+
+    </div><!-- /support-grid -->
+
+    <!-- 채팅 후 화면 -->
+    <div class="chat-history">
+      <div class="chat-date-divider">
+        <span></span>
+        <time>오늘 오후 7:12</time>
+        <span></span>
+      </div>
+
+      <div class="chat-user-row">
+        <div class="chat-user-bubble">블랙박스 추천<br>해주세요</div>
+        <div class="chat-time chat-time-user">오후 7:12</div>
+      </div>
+
+      <div class="chat-ai-label">아이나비 AI</div>
+      <div class="chat-ai-row">
+        <div class="chat-ai-avatar">
+          avatar
+        </div>
+        <div class="chat-ai-card">
+          <p>
+            블랙박스를 추천해드릴게요! 용도와 예산에 맞는 제품을
+            알려드리겠습니다.
+          </p>
+          <h2>인기 모델 TOP 3</h2>
+          <ul>
+            <li><strong>QXD5000</strong> - QHD 전후방 + 야간 강화 AI ISP</li>
+            <li><strong>FXD900</strong> - 커넥티드 스마트 블랙박스 + 실시간 내비 연동</li>
+            <li><strong>QXD900mini</strong> - FHD 2채널 · 소형 · 다국어 지원</li>
+          </ul>
+        </div>
+      </div>
+      <div class="chat-time chat-time-ai">오후 7:12</div>
+    </div>
+
+    <!-- 텍스트 기반 답변 버블 예시 -->
+    <div class="text-answer-examples">
+      <div class="answer-message">
+        <span class="sr-only">아이나비 AI 답변</span>
+        <div class="chat-ai-label">아이나비 AI</div>
+        <div class="chat-ai-row">
+          <div class="chat-ai-avatar">avatar</div>
+          <div class="chat-ai-card answer-bubble">
+            <p>
+              아이나비 QXD5000은 전후방 QHD 화질과 야간 강화 AI ISP를 지원하는
+              프리미엄 블랙박스입니다. 야간 주행이 많거나 번호판 식별력을 중요하게
+              보는 사용자에게 잘 맞습니다.
+            </p>
+            <div class="answer-feedback" aria-label="답변 피드백">
+              <button type="button">복사</button>
+            </div>
+          </div>
+        </div>
+        <time class="chat-time chat-time-ai">오후 7:13</time>
+      </div>
+
+      <div class="answer-message">
+        <span class="sr-only">아이나비 AI 답변</span>
+        <div class="chat-ai-label">아이나비 AI</div>
+        <div class="chat-ai-row">
+          <div class="chat-ai-avatar">avatar</div>
+          <div class="chat-ai-card answer-bubble">
+            <h3>QXD5000 주요 장점</h3>
+            <ul>
+              <li><strong>전후방 QHD</strong>로 주행 상황을 더 선명하게 기록합니다.</li>
+              <li><strong>야간 강화 AI ISP</strong>가 어두운 도로의 시인성을 보완합니다.</li>
+              <li><strong>커넥티드 기능</strong>과 함께 사용하면 충격 알림 확인이 편리합니다.</li>
+            </ul>
+            <div class="answer-feedback" aria-label="답변 피드백">
+              <button type="button">복사</button>
+            </div>
+          </div>
+        </div>
+        <time class="chat-time chat-time-ai">오후 7:14</time>
+      </div>
+
+      <div class="answer-message">
+        <span class="sr-only">아이나비 AI 답변 생성 중</span>
+        <div class="chat-ai-label">아이나비 AI</div>
+        <div class="chat-ai-row">
+          <div class="chat-ai-avatar">avatar</div>
+          <div class="chat-ai-card answer-bubble answer-bubble-loading" aria-live="polite">
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <div class="answer-feedback" aria-label="답변 피드백">
+              <button type="button">복사</button>
+            </div>
+          </div>
+        </div>
+        <time class="chat-time chat-time-ai">오후 7:15</time>
+      </div>
+    </div>
+
+    <!-- 상품 추천 카드 예시 -->
+    <div class="product-card-slider" aria-label="추천 상품">
+      <article class="recommend-product-card">
+        <div class="recommend-product-image-wrap">
+          <img src="image/product-qxd5000.jpg" alt="아이나비 QXD5000 블랙박스">
+          <span class="recommend-product-badge">다품목 할인</span>
+        </div>
+
+        <h3 class="recommend-product-name">아이나비 QXD5000 프리미엄 QHD 블랙박스</h3>
+        <p class="recommend-product-meta">전후방 QHD · QXD5000</p>
+
+        <div class="recommend-product-rating">
+          <span aria-hidden="true">★</span>
+          <strong>4.9</strong>
+          <em>리뷰 1,434</em>
+        </div>
+
+        <div class="recommend-product-price">
+          <del>620,000원</del>
+          <span>최대혜택가</span>
+          <strong>513,600원</strong>
+        </div>
+
+        <button class="recommend-subscribe-btn" type="button">
+          6년 구독 시, 월 17,800원
+        </button>
+
+        <div class="recommend-product-actions">
+          <button class="recommend-outline-btn" type="button">
+            새창열림 <span aria-hidden="true">↗</span>
+          </button>
+          <button class="recommend-filled-btn" type="button">장바구니 담기</button>
+        </div>
+      </article>
+    </div>
+
+    <!-- 상품 비교 카드 예시 -->
+    <div class="compare-section">
+      <div class="compare-card-track" aria-label="상품 비교">
+        <article class="compare-product-card">
+          <div class="recommend-product-image-wrap">
+            <img src="image/product-qxd5000.jpg" alt="아이나비 QXD5000">
+            <span class="recommend-product-badge">추천</span>
+          </div>
+          <h3 class="recommend-product-name">아이나비 QXD5000 프리미엄 QHD 블랙박스</h3>
+          <p class="recommend-product-meta">전후방 QHD · QXD5000</p>
+          <div class="recommend-product-price">
+            <del>620,000원</del>
+            <span>최대혜택가</span>
+            <strong>513,600원</strong>
+          </div>
+          <div class="compare-spec-table">
+            <div class="compare-spec-row"><span>라인업</span><strong>QXD 시리즈</strong></div>
+            <div class="compare-spec-row"><span>영상 프로세서</span><strong>야간 강화 AI ISP</strong></div>
+            <div class="compare-spec-row"><span>녹화 화질</span><strong>전후방 QHD</strong></div>
+            <div class="compare-spec-row"><span>채널</span><strong>2채널</strong></div>
+            <div class="compare-spec-row"><span>커넥티드</span><strong>제공됨</strong></div>
+          </div>
+          <div class="recommend-product-actions">
+            <button class="recommend-outline-btn" type="button">새창열림 <span aria-hidden="true">↗</span></button>
+            <button class="recommend-filled-btn" type="button">장바구니 담기</button>
+          </div>
+        </article>
+
+        <article class="compare-product-card">
+          <div class="recommend-product-image-wrap">
+            <img src="image/product-qxd5000.jpg" alt="아이나비 FXD900">
+            <span class="recommend-product-badge">스마트</span>
+          </div>
+          <h3 class="recommend-product-name">아이나비 FXD900 커넥티드 블랙박스</h3>
+          <p class="recommend-product-meta">전후방 FHD · FXD900</p>
+          <div class="recommend-product-price">
+            <del>420,000원</del>
+            <span>최대혜택가</span>
+            <strong>359,000원</strong>
+          </div>
+          <div class="compare-spec-table">
+            <div class="compare-spec-row"><span>라인업</span><strong>FXD 시리즈</strong></div>
+            <div class="compare-spec-row"><span>영상 프로세서</span><strong>스마트 보정 ISP</strong></div>
+            <div class="compare-spec-row"><span>녹화 화질</span><strong>전후방 FHD</strong></div>
+            <div class="compare-spec-row"><span>채널</span><strong>2채널</strong></div>
+            <div class="compare-spec-row"><span>커넥티드</span><strong>제공됨</strong></div>
+          </div>
+          <div class="recommend-product-actions">
+            <button class="recommend-outline-btn" type="button">새창열림 <span aria-hidden="true">↗</span></button>
+            <button class="recommend-filled-btn" type="button">장바구니 담기</button>
+          </div>
+        </article>
+
+        <article class="compare-product-card">
+          <div class="recommend-product-image-wrap">
+            <img src="image/product-qxd5000.jpg" alt="아이나비 QXD900mini">
+            <span class="recommend-product-badge">소형</span>
+          </div>
+          <h3 class="recommend-product-name">아이나비 QXD900mini 소형 블랙박스</h3>
+          <p class="recommend-product-meta">FHD 2채널 · QXD900mini</p>
+          <div class="recommend-product-price">
+            <del>330,000원</del>
+            <span>최대혜택가</span>
+            <strong>289,000원</strong>
+          </div>
+          <div class="compare-spec-table">
+            <div class="compare-spec-row"><span>라인업</span><strong>QXD mini</strong></div>
+            <div class="compare-spec-row"><span>영상 프로세서</span><strong>저조도 보정 ISP</strong></div>
+            <div class="compare-spec-row"><span>녹화 화질</span><strong>전후방 FHD</strong></div>
+            <div class="compare-spec-row"><span>채널</span><strong>2채널</strong></div>
+            <div class="compare-spec-row"><span>커넥티드</span><strong>별도 지원</strong></div>
+          </div>
+          <div class="recommend-product-actions">
+            <button class="recommend-outline-btn" type="button">새창열림 <span aria-hidden="true">↗</span></button>
+            <button class="recommend-filled-btn" type="button">장바구니 담기</button>
+          </div>
+        </article>
+      </div>
+
+      <div class="compare-cta">
+        <p>이 제품이 고민되시나요? 더 많은 궁금증은 구매전문가가 안내해 드릴게요.</p>
+        <button type="button">구매전문가 연결하기 <span aria-hidden="true">↗</span></button>
+      </div>
+    </div>
+
+    <!-- 검색 결과 없음 답변 예시 -->
+    <div class="chat-empty-search">
+      <div class="chat-user-row">
+        <div class="chat-user-bubble">QXD7000 실시간<br>후방 카메라 찾아줘</div>
+        <div class="chat-time chat-time-user">오후 5:11</div>
+      </div>
+
+      <div class="answer-message">
+        <span class="sr-only">아이나비 AI 답변</span>
+        <div class="chat-ai-label">아이나비 AI</div>
+        <div class="chat-ai-row">
+          <div class="chat-ai-avatar">avatar</div>
+          <div class="chat-ai-card answer-bubble empty-search-answer">
+            <h3>검색 결과가 없습니다.</h3>
+            <p>요청하신 “QXD7000 실시간 후방 카메라”와 정확히 일치하는 아이나비 제품을 찾지 못했습니다. 모델명이나 기능명을 조금 바꿔 다시 검색해보세요.</p>
+            <div class="empty-search-box">
+              <div class="empty-search-icon" aria-hidden="true">?</div>
+              <p>비슷한 제품과 추천 검색어를 확인해볼 수 있습니다.</p>
+              <div class="empty-search-actions">
+                <button type="button">QXD5000 추천 보기</button>
+                <button type="button">블랙박스 전체 제품 보기</button>
+                <button type="button">상담으로 제품 찾기</button>
+              </div>
+            </div>
+            <div class="answer-feedback"><button type="button">복사</button></div>
+          </div>
+        </div>
+        <time class="chat-time chat-time-ai">오후 5:11</time>
+      </div>
+    </div>
+
+    <div class="scroll-bottom-pad"></div>
+  </div><!-- /scroll-content -->
+
+  <!-- ====== STICKY INPUT BAR ====== -->
+  <div class="input-bar">
+
+    <!-- 카테고리 버튼 -->
+    <div class="cat-btn" role="button" tabindex="0" aria-label="카테고리" aria-controls="category-modal" aria-expanded="false">
+      <!-- 4분할 그리드 아이콘 -->
+      <svg viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+        <rect x="0" y="0" width="7.5" height="7.5" rx="1.5"/>
+        <rect x="10.5" y="0" width="7.5" height="7.5" rx="1.5"/>
+        <rect x="0" y="10.5" width="7.5" height="7.5" rx="1.5"/>
+        <rect x="10.5" y="10.5" width="7.5" height="7.5" rx="1.5"/>
+      </svg>
+    </div>
+
+    <!-- 입력창 -->
+    <div class="input-wrap">
+      <input
+        class="input-field"
+        type="text"
+        placeholder="AI Chat에 무엇이든 물어보세요."
+        autocomplete="off"
+      />
+      <!-- 전송 버튼 (Phosphor Icons / PaperPlaneTilt) -->
+      <div class="send-btn" role="button" aria-label="전송">
+        <svg viewBox="0 0 16 16">
+          <path d="M14 2L7 9"/>
+          <path d="M14 2L9.5 14L7 9L2 6.5L14 2Z"/>
+        </svg>
+      </div>
+    </div>
+
+  </div><!-- /input-bar -->
+
+  <!-- ====== CATEGORY MODAL ====== -->
+  <div class="category-modal" id="category-modal" aria-hidden="true">
+    <div class="category-modal-backdrop" data-modal-close></div>
+    <div class="category-sheet" role="dialog" aria-modal="true" aria-labelledby="category-modal-title">
+      <div class="category-grip"></div>
+
+      <div class="category-sheet-header">
+        <h2 id="category-modal-title">무엇을 도와드릴까요?</h2>
+        <button class="category-close" type="button" aria-label="닫기" data-modal-close>
+          <img src="image/modal-close.svg" alt="" aria-hidden="true">
+        </button>
+      </div>
+
+      <div class="category-sheet-body">
+        <section class="category-section" aria-labelledby="product-category-title">
+          <h3 id="product-category-title">제품 문의</h3>
+          <div class="category-grid">
+            <button class="category-card js-open-feature" type="button" data-feature-target="product-search-flow">
+              <span class="category-icon category-icon-blue">
+                <img src="image/modal-product-search.svg" alt="" aria-hidden="true">
+              </span>
+              <span>제품 검색·<br>추천</span>
+            </button>
+            <button class="category-card js-open-feature" type="button" data-feature-target="product-spec-flow">
+              <span class="category-icon category-icon-blue">
+                <img src="image/modal-product-spec.svg" alt="" aria-hidden="true">
+              </span>
+              <span>제품 스펙·<br>사용법</span>
+            </button>
+            <button class="category-card js-open-feature" type="button" data-feature-target="promo-flow">
+              <span class="category-icon category-icon-gray">
+                <img src="image/modal-promo.svg" alt="" aria-hidden="true">
+              </span>
+              <span>인기·<br>기획전</span>
+            </button>
+            <button class="category-card js-open-feature" type="button" data-feature-target="accessory-flow">
+              <span class="category-icon category-icon-gray">
+                <img src="image/modal-accessory.svg" alt="" aria-hidden="true">
+              </span>
+              <span>액세서리·<br>소모품</span>
+            </button>
+          </div>
+        </section>
+
+        <section class="category-section" aria-labelledby="service-category-title">
+          <h3 id="service-category-title">AS · 서비스</h3>
+          <div class="category-grid">
+            <button class="category-card category-card-active" type="button">
+              <span class="category-icon category-icon-blue">
+                <img src="image/modal-as-reservation.svg" alt="" aria-hidden="true">
+              </span>
+              <span>방문 AS<br>예약</span>
+            </button>
+            <button class="category-card category-card-locator" type="button">
+              <span class="category-icon category-icon-blue">
+                <img src="image/modal-center.svg" alt="" aria-hidden="true">
+              </span>
+              <span>서비스센터·<br>장착점 찾기</span>
+            </button>
+            <button class="category-card js-open-feature" type="button" data-feature-target="reservation-check-flow">
+              <span class="category-icon category-icon-gray">
+                <img src="image/modal-reservation.svg" alt="" aria-hidden="true">
+              </span>
+              <span>예약 확인·<br>변경·취소</span>
+            </button>
+            <button class="category-card js-open-feature" type="button" data-feature-target="faq-flow">
+              <span class="category-icon category-icon-blue">
+                <img src="image/modal-faq.svg" alt="" aria-hidden="true">
+              </span>
+              <span>FAQ·<br>자주 묻는 질문</span>
+            </button>
+          </div>
+        </section>
+      </div>
+
+      <div class="category-modal-input">
+        <button class="category-modal-menu" type="button" aria-label="카테고리">
+          <img src="image/modal-menu-grid.svg" alt="" aria-hidden="true">
+        </button>
+        <div class="category-modal-input-wrap">
+          <input type="text" placeholder="AI Chat에 무엇이든 물어보세요." autocomplete="off">
+          <button class="category-modal-send" type="button" aria-label="전송">
+            <img src="image/modal-send-vector.svg" alt="" aria-hidden="true">
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== STORE / SERVICE CENTER FINDER FULL PAGE ====== -->
+  <div class="locator-flow" id="locator-flow" aria-hidden="true">
+    <div class="locator-flow-header">
+      <button class="locator-close" type="button" aria-label="뒤로가기">‹</button>
+      <div>
+        <h2>장착점·서비스센터 찾기</h2>
+      </div>
+    </div>
+
+    <div class="locator-body">
+      <div class="locator-tabs" role="tablist" aria-label="센터 유형 선택">
+        <button class="is-active" type="button" role="tab" aria-selected="true" data-locator-tab="shop">대리점·장착점</button>
+        <button type="button" role="tab" aria-selected="false" data-locator-tab="service">서비스센터</button>
+      </div>
+
+      <div class="locator-guide">
+        현재 위치 기준으로 가까운 대리점을 찾았습니다.
+        지역을 변경하거나 지도로 확인할 수 있습니다.
+      </div>
+
+      <div class="locator-map">
+        <img src="image/store-center-map.png" alt="서울 강남구 주변 지도">
+        <span class="locator-map-pin locator-map-pin-blue"><i></i><b>강남점</b></span>
+        <span class="locator-map-pin locator-map-pin-muted"><i></i><b>서초점</b></span>
+        <button class="locator-map-current" type="button" aria-label="현재 위치">⌖</button>
+      </div>
+
+      <div class="locator-search-row">
+        <button type="button">서울 · 강남구</button>
+        <button type="button" aria-label="현재 위치">⌖</button>
+      </div>
+
+      <div class="locator-tab-panel is-active" data-locator-panel="shop">
+        <div class="locator-result-head">
+          <p>총 <strong>5개</strong> 검색</p>
+          <button type="button">거리 가까운 순</button>
+        </div>
+
+        <div class="locator-result-list">
+        <article class="locator-place-card">
+          <em>0.4km</em>
+          <h3>아이나비 강남 직영점</h3>
+          <p>서울 강남구 테헤란로 152</p>
+          <p>평일 09:00~18:00</p>
+          <div class="locator-tags">
+            <span>공식대리점</span>
+            <span>블랙박스 장착</span>
+            <span>네비 설치</span>
+          </div>
+          <div class="locator-actions">
+            <button type="button">전화</button>
+            <button type="button">길찾기</button>
+            <button type="button">AS예약</button>
+          </div>
+        </article>
+
+        <article class="locator-place-card">
+          <em>1.2km</em>
+          <h3>아이나비 서초 파트너점</h3>
+          <p>서울 서초구 강남대로 305</p>
+          <p>평일 10:00~19:00, 토 10:00~15:00</p>
+          <div class="locator-tags">
+            <span>블랙박스 장착</span>
+            <span>틴팅</span>
+          </div>
+          <div class="locator-actions locator-actions-two">
+            <button type="button">전화</button>
+            <button type="button">길찾기</button>
+          </div>
+        </article>
+        </div>
+      </div>
+
+      <div class="locator-tab-panel" data-locator-panel="service">
+        <div class="locator-result-head">
+          <p>총 <strong>3개</strong> 검색</p>
+          <button type="button">예약 빠른 순</button>
+        </div>
+
+        <div class="locator-result-list">
+          <article class="locator-place-card">
+            <em>0.8km</em>
+            <h3>아이나비 강남 서비스센터</h3>
+            <p>서울 강남구 테헤란로 152</p>
+            <p>평일 09:00~18:00, 토·일 휴무</p>
+            <div class="locator-tags">
+              <span>공식 서비스센터</span>
+              <span>예약 가능</span>
+              <span>블랙박스 점검</span>
+            </div>
+            <div class="locator-actions">
+              <button type="button">전화</button>
+              <button type="button">길찾기</button>
+              <button type="button">AS예약</button>
+            </div>
+          </article>
+
+          <article class="locator-place-card">
+            <em>2.1km</em>
+            <h3>아이나비 송파 서비스센터</h3>
+            <p>서울 송파구 올림픽로 240</p>
+            <p>평일 10:00~19:00</p>
+            <div class="locator-tags">
+              <span>서비스 접수</span>
+              <span>제품 점검</span>
+            </div>
+            <div class="locator-actions locator-actions-two">
+              <button type="button">전화</button>
+              <button type="button">길찾기</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== FEATURE FULL PAGE SCREENS ====== -->
+  <div class="feature-flow" id="reservation-check-flow" aria-hidden="true">
+    <div class="feature-flow-header">
+      <button class="feature-flow-back" type="button" aria-label="뒤로가기">‹</button>
+      <div><h2>예약 확인·변경·취소</h2></div>
+    </div>
+    <div class="feature-flow-body">
+      <section class="feature-section">
+        <h3>예약 조회</h3>
+        <div class="feature-form-card">
+          <label>예약 번호<input type="text" value="INV-2025-04821"></label>
+          <label>연락처<input type="text" value="010-1234-5678"></label>
+          <button type="button">예약 조회하기</button>
+        </div>
+      </section>
+      <section class="feature-section">
+        <h3>예약 목록</h3>
+        <article class="feature-list-card">
+          <span class="feature-pill">예약 확정</span>
+          <h4>아이나비 강남 서비스센터 방문 AS</h4>
+          <p>2025년 5월 12일 (월) 09:30</p>
+          <p>QXD5000 · 주차 녹화 점검</p>
+          <div class="feature-actions"><button type="button">상세 보기</button><button type="button">변경하기</button></div>
+        </article>
+      </section>
+      <section class="feature-section">
+        <h3>예약 상세</h3>
+        <dl class="feature-detail-card">
+          <dt>예약 번호</dt><dd>INV-2025-04821</dd>
+          <dt>센터</dt><dd>아이나비 강남 서비스센터</dd>
+          <dt>예약자</dt><dd>홍길동 · 010-1234-5678</dd>
+          <dt>증상</dt><dd>주차 중 녹화가 되지 않습니다.</dd>
+        </dl>
+      </section>
+      <section class="feature-section">
+        <h3>취소 확인</h3>
+        <div class="feature-confirm-card">
+          <p>예약을 취소하시겠습니까? 취소 후 같은 시간대 재예약이 어려울 수 있습니다.</p>
+          <div class="feature-actions"><button type="button">유지하기</button><button type="button">예약 취소</button></div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="feature-flow" id="faq-flow" aria-hidden="true">
+    <div class="feature-flow-header">
+      <button class="feature-flow-back" type="button" aria-label="뒤로가기">‹</button>
+      <div><h2>FAQ·자주 묻는 질문</h2></div>
+    </div>
+    <div class="feature-flow-body">
+      <section class="feature-section faq-panel is-active" data-faq-panel="list">
+        <h3>FAQ 리스트</h3>
+        <button class="feature-list-card faq-list-item" type="button" data-faq-open="detail"><span class="feature-pill">블랙박스</span><h4>QXD5000 녹화 영상은 어디에서 확인하나요?</h4><p>앱, PC 뷰어, 제품 메모리카드에서 확인할 수 있습니다.</p></button>
+        <button class="feature-list-card faq-list-item" type="button" data-faq-open="detail"><span class="feature-pill">내비게이션</span><h4>지도 업데이트는 어떻게 하나요?</h4><p>아이나비 매니저를 설치한 뒤 SD카드를 연결해 업데이트합니다.</p></button>
+        <button class="feature-list-card faq-list-item" type="button" data-faq-open="detail"><span class="feature-pill">AS</span><h4>방문 AS 예약 변경은 언제까지 가능한가요?</h4><p>방문 1일 전까지 예약 확인 화면에서 변경할 수 있습니다.</p></button>
+      </section>
+      <section class="feature-section faq-panel" data-faq-panel="detail">
+        <h3>FAQ 상세</h3>
+        <div class="feature-doc-card">
+          <h4>QXD5000 녹화 영상 확인 방법</h4>
+          <p>제품의 메모리카드를 분리한 뒤 PC 뷰어에서 확인하거나, 커넥티드 모델은 아이나비 앱에서 최근 이벤트 영상을 확인할 수 있습니다.</p>
+          <ul><li>상시 녹화: 주행 중 자동 저장</li><li>이벤트 녹화: 충격 감지 시 별도 보관</li><li>주차 녹화: 전원 연결 상태에 따라 지원</li></ul>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="feature-flow" id="product-search-flow" aria-hidden="true">
+    <div class="feature-flow-header">
+      <button class="feature-flow-back" type="button" aria-label="뒤로가기">‹</button>
+      <div><h2>제품 검색·추천</h2></div>
+    </div>
+    <div class="feature-flow-body">
+      <section class="feature-section">
+        <h3>검색 조건</h3>
+        <div class="feature-search-box">블랙박스 · 전후방 QHD · 주차 녹화</div>
+      </section>
+      <section class="feature-section">
+        <h3>추천 결과</h3>
+        <article class="feature-product-card">
+          <img src="image/product-qxd5000.jpg" alt="아이나비 QXD5000">
+          <div><span class="feature-pill">추천</span><h4>아이나비 QXD5000</h4><p>전후방 QHD · 야간 강화 AI ISP · 커넥티드 지원</p><strong>513,600원</strong></div>
+        </article>
+        <article class="feature-product-card">
+          <img src="image/product-qxd5000.jpg" alt="아이나비 FXD900">
+          <div><span class="feature-pill">실속형</span><h4>아이나비 FXD900</h4><p>전후방 FHD · 스마트 보정 · 실시간 알림</p><strong>359,000원</strong></div>
+        </article>
+      </section>
+    </div>
+  </div>
+
+  <div class="feature-flow" id="product-spec-flow" aria-hidden="true">
+    <div class="feature-flow-header">
+      <button class="feature-flow-back" type="button" aria-label="뒤로가기">‹</button>
+      <div><h2>제품 스펙·사용법</h2></div>
+    </div>
+    <div class="feature-flow-body">
+      <section class="feature-section">
+        <h3>제품 선택</h3>
+        <div class="feature-segment"><button class="is-active" type="button">QXD5000</button><button type="button">FXD900</button><button type="button">QXD900mini</button></div>
+      </section>
+      <section class="feature-section">
+        <h3>스펙 안내</h3>
+        <dl class="feature-detail-card">
+          <dt>화질</dt><dd>전후방 QHD</dd>
+          <dt>채널</dt><dd>2채널</dd>
+          <dt>주차 녹화</dt><dd>지원</dd>
+          <dt>커넥티드</dt><dd>실시간 충격 알림 지원</dd>
+        </dl>
+      </section>
+      <section class="feature-section">
+        <h3>사용법</h3>
+        <div class="feature-doc-card"><h4>주차 녹화 설정</h4><p>제품 메뉴에서 주차 녹화 모드를 켠 뒤 배터리 보호 전압을 설정해주세요. 장시간 주차 시 차량 배터리 상태를 확인하는 것이 좋습니다.</p></div>
+      </section>
+    </div>
+  </div>
+
+  <div class="feature-flow" id="accessory-flow" aria-hidden="true">
+    <div class="feature-flow-header">
+      <button class="feature-flow-back" type="button" aria-label="뒤로가기">‹</button>
+      <div><h2>액세서리·소모품</h2></div>
+    </div>
+    <div class="feature-flow-body">
+      <section class="feature-section">
+        <h3>소모품 목록</h3>
+        <div class="feature-card-grid">
+          <article class="feature-mini-card"><h4>정품 메모리카드 128GB</h4><p>QXD/FXD 시리즈 호환</p><strong>39,000원</strong></article>
+          <article class="feature-mini-card"><h4>상시 전원 케이블</h4><p>주차 녹화 지원용</p><strong>24,000원</strong></article>
+          <article class="feature-mini-card"><h4>후방 카메라 케이블</h4><p>2채널 설치 부품</p><strong>18,000원</strong></article>
+          <article class="feature-mini-card"><h4>거치 브라켓</h4><p>전면 유리 부착형</p><strong>12,000원</strong></article>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <div class="feature-flow" id="promo-flow" aria-hidden="true">
+    <div class="feature-flow-header">
+      <button class="feature-flow-back" type="button" aria-label="뒤로가기">‹</button>
+      <div><h2>인기·기획전</h2></div>
+    </div>
+    <div class="feature-flow-body">
+      <section class="feature-section">
+        <h3>기획전 목록</h3>
+        <article class="feature-banner-card"><span>블랙박스 교체 기획전</span><h4>QXD 시리즈 구매 시 장착비 지원</h4><p>프리미엄 모델과 정품 메모리카드를 함께 구성해보세요.</p></article>
+        <article class="feature-banner-card"><span>커넥티드 패키지</span><h4>실시간 알림 서비스 추천</h4><p>주차 충격 알림과 원격 영상 확인이 필요한 운전자에게 적합합니다.</p></article>
+        <article class="feature-banner-card"><span>내비 업데이트</span><h4>장거리 운전 전 지도 업데이트 안내</h4><p>최신 도로 정보를 적용하고 안전하게 출발하세요.</p></article>
+      </section>
+    </div>
+  </div>
+
+  <div class="feature-flow" id="state-flow" aria-hidden="true">
+    <div class="feature-flow-header">
+      <button class="feature-flow-back" type="button" aria-label="뒤로가기">‹</button>
+      <div><h2>상태 화면 모음</h2></div>
+    </div>
+    <div class="feature-flow-body">
+      <section class="feature-section"><h3>검색 결과 없음</h3><div class="feature-empty-card"><strong>검색 결과가 없습니다.</strong><p>다른 제품명이나 지역명으로 다시 검색해주세요.</p></div></section>
+      <section class="feature-section"><h3>예약 내역 없음</h3><div class="feature-empty-card"><strong>예약 내역이 없습니다.</strong><p>방문 AS 예약을 먼저 진행해주세요.</p></div></section>
+      <section class="feature-section"><h3>로그인 필요</h3><div class="feature-empty-card"><strong>로그인이 필요합니다.</strong><p>보유제품과 예약 정보를 확인하려면 로그인해주세요.</p></div></section>
+      <section class="feature-section"><h3>네트워크 오류</h3><div class="feature-empty-card"><strong>정보를 불러오지 못했습니다.</strong><p>연결 상태를 확인한 뒤 다시 시도해주세요.</p></div></section>
+    </div>
+  </div>
+
+  <!-- ====== VISIT AS RESERVATION FULL PAGE ====== -->
+  <div class="as-flow" id="as-flow" aria-hidden="true">
+    <div class="as-flow-header">
+      <button class="as-flow-back" type="button" aria-label="뒤로가기">‹</button>
+      <div>
+        <h2>방문 AS 예약</h2>
+        <p><span class="as-step-current">1</span>단계 / 5단계 <span class="as-step-name">· 약관동의</span></p>
+      </div>
+    </div>
+
+    <div class="as-progress" aria-hidden="true">
+      <span class="is-active"></span>
+      <span></span>
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+
+    <div class="as-flow-body">
+      <div class="as-ai-row">
+        <div class="as-ai-bubble">
+          방문 AS 예약을 시작하겠습니다.<br>
+          먼저 <strong>개인정보 수집·이용</strong>에 동의해주세요.
+        </div>
+      </div>
+
+      <section class="as-step-panel is-active" data-as-step="1">
+        <div class="as-consent-card">
+          <h3>개인정보 수집·이용 동의</h3>
+          <p>AS 예약 서비스 제공을 위해 아래와 같이 개인정보를 수집·이용합니다.</p>
+          <div class="as-info-table">
+            <div><strong>수집 항목</strong><strong>이용 목적</strong><strong>보유 기간</strong></div>
+            <div><span>성명, 연락처, 제품 모델명, 증상</span><span>AS 예약 접수 및 안내</span><span>예약 완료 후 1년</span></div>
+          </div>
+          <label class="as-check-row"><input type="checkbox" checked> <span>전체 동의</span></label>
+          <label class="as-check-row"><input type="checkbox" checked> <span><em>필수</em> 개인정보 수집·이용에 동의합니다</span></label>
+        </div>
+      </section>
+
+      <section class="as-step-panel" data-as-step="2">
+        <div class="as-select-row">
+          <button type="button">서울 · 강남구 <img src="image/as-select-chevron.svg" alt="" aria-hidden="true"></button>
+          <button class="as-location-btn" type="button" aria-label="현재 위치">
+            <img src="image/as-location-icon.png" alt="" aria-hidden="true">
+          </button>
+        </div>
+        <p class="as-count">총 <strong>3개</strong> 센터</p>
+        <div class="as-center-list">
+          <button class="as-center-card is-selected" type="button">
+            <span class="as-radio"></span>
+            <strong>아이나비 강남 서비스센터</strong>
+            <em>0.8km</em>
+            <div class="as-center-info">
+              <span><img src="image/as-center-address.png" alt="" aria-hidden="true">서울 강남구 테헤란로 152</span>
+              <span><img src="image/as-center-phone.png" alt="" aria-hidden="true">02-1234-5678</span>
+              <span><img src="image/as-center-time.png" alt="" aria-hidden="true">평일 09:00~18:00</span>
+            </div>
+            <div class="as-tag-list">
+              <span>공식 서비스센터</span>
+              <span>예약 가능</span>
+            </div>
+          </button>
+          <button class="as-center-card" type="button">
+            <span class="as-radio"></span>
+            <strong>아이나비 서초 대리점</strong>
+            <em>1.4km</em>
+            <div class="as-center-info">
+              <span><img src="image/as-center-address.png" alt="" aria-hidden="true">서울 서초구 강남대로 305</span>
+              <span><img src="image/as-center-phone.png" alt="" aria-hidden="true">02-2345-5678</span>
+              <span><img src="image/as-center-time.png" alt="" aria-hidden="true">평일 10:00~19:00</span>
+            </div>
+            <div class="as-tag-list">
+              <span>대리점</span>
+              <span>장착 가능</span>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <section class="as-step-panel" data-as-step="3">
+        <div class="as-calendar-card">
+          <div class="as-calendar-head">
+            <h3>2025년 5월</h3>
+            <div><button type="button">‹</button><button type="button">›</button></div>
+          </div>
+          <div class="as-calendar-grid">
+            <b>일</b><b>월</b><b>화</b><b>수</b><b>목</b><b>금</b><b>토</b>
+            <span>27</span><span>28</span><span>29</span><span>30</span><span>1</span><span>2</span><span>3</span>
+            <span>4</span><span>5</span><span>6</span><button type="button">7</button><span>8</span><span>9</span><span>10</span>
+            <span>11</span><button class="is-selected" type="button">12</button><span>13</span><span>14</span><span>15</span><span>16</span><span>17</span>
+          </div>
+          <h4>5월 12일(월) 예약 가능 시간</h4>
+          <div class="as-time-grid">
+            <button disabled>09:00</button><button class="is-selected" type="button">09:30</button><button type="button">10:00</button><button type="button">10:30</button>
+            <button type="button">11:00</button><button disabled>11:30</button><button disabled>점심 (12~13시)</button>
+            <button type="button">13:00</button><button type="button">13:30</button><button type="button">14:00</button><button type="button">14:30</button>
+          </div>
+          <p class="as-note">회색 시간대는 이미 예약이 완료된 시간입니다.</p>
+        </div>
+      </section>
+
+      <section class="as-step-panel" data-as-step="4">
+        <div class="as-summary-card">
+          <h3>선택한 예약 정보</h3>
+          <dl>
+            <dt>센터</dt><dd>아이나비 강남 서비스센터</dd>
+            <dt>날짜</dt><dd>2025년 5월 12일 (월)</dd>
+            <dt>시간</dt><dd>오전 09:30</dd>
+          </dl>
+        </div>
+        <div class="as-form-card">
+          <h3>예약자 정보</h3>
+          <label>성명 <span>*</span><input type="text" value="홍길동"></label>
+          <label>연락처 <span>*</span><input type="text" value="010-1234-5678"></label>
+          <label>제품 모델명 <span>*</span><input type="text" value="QXD5000"></label>
+          <label>증상설명 <span>*</span><textarea placeholder="고장 증상이나 요청사항을 입력해주세요.">주행 중 전원이 간헐적으로 꺼지고 녹화 파일이 저장되지 않습니다.</textarea></label>
+        </div>
+      </section>
+
+      <section class="as-step-panel as-complete-panel" data-as-step="5">
+        <div class="as-complete-hero">
+          <div class="as-complete-check" aria-hidden="true">✓</div>
+          <h3>예약이 완료되었습니다!</h3>
+          <p>방문 예약이 정상적으로 접수되었습니다.<br>예약 당일 10분 전에 방문해주세요.</p>
+        </div>
+
+        <div class="as-reservation-number">
+          <span>예약 번호</span>
+          <strong>INV-2025-04821</strong>
+        </div>
+
+        <div class="as-complete-card">
+          <h3>예약 상세 정보</h3>
+          <dl>
+            <dt>상태</dt><dd><span class="as-status-pill">예약 확정</span></dd>
+            <dt>센터</dt><dd>아이나비 강남 서비스센터</dd>
+            <dt>날짜</dt><dd>2025년 5월 12일 (월) 09:30</dd>
+            <dt>예약자</dt><dd>홍길동 · 010-1234-5678</dd>
+            <dt>제품</dt><dd>아이나비 QXD5000</dd>
+            <dt>증상</dt><dd>주차 중 녹화가 안 됩니다.</dd>
+          </dl>
+        </div>
+
+        <div class="as-notice-card">
+          <h3>방문 전 확인 사항</h3>
+          <ul>
+            <li>예약 당일 예약 번호를 제시해주세요.</li>
+            <li>제품 보증서 및 구매 영수증을 지참해주세요.</li>
+            <li>취소/변경은 방문 1일 전까지 가능합니다.</li>
+            <li>당일 취소 시 불이익이 생길 수 있습니다.</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+
+    <div class="as-flow-footer">
+      <button class="as-primary-btn" type="button">동의하고 다음 단계로</button>
+      <button class="as-secondary-btn" type="button">동의하지 않음 (예약 불가)</button>
+    </div>
+  </div>
+
+</div><!-- /phone-frame -->
+  <script src="js/chatbot_home.js"></script>
+</body>
+</html>

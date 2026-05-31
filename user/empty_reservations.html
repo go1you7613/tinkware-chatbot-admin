@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>예약 내역 없음</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 40px 20px; background: #fff; font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; color: #111; }
+    .phone-frame { width: 390px; height: 844px; border: 1px solid #111; border-radius: 16px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+    .state-header { height: 82px; border-bottom: 1px solid #e8e8e8; display: grid; grid-template-columns: 42px 1fr 42px; align-items: center; }
+    .back-btn { border: 0; background: transparent; color: #111; font-size: 34px; line-height: 1; }
+    h1 { text-align: center; font-size: 19px; font-weight: 800; }
+    .state-body { flex: 1; padding: 28px 18px; display: flex; flex-direction: column; }
+    .lookup-card { border: 1px solid #d9e8fb; border-radius: 16px; background: #f8fbff; padding: 16px; }
+    .lookup-card h2 { font-size: 16px; font-weight: 800; }
+    .lookup-card p { margin-top: 8px; color: #555; font-size: 14px; line-height: 1.5; }
+    .empty-card { margin-top: 74px; text-align: center; }
+    .empty-icon { width: 72px; height: 72px; margin: 0 auto 22px; border-radius: 50%; background: #e0ecfa; color: #0b73d9; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800; }
+    .empty-card h2 { font-size: 22px; font-weight: 800; line-height: 1.35; }
+    .empty-card p { margin-top: 12px; color: #666; font-size: 15px; line-height: 1.55; }
+    .info-list { margin-top: 28px; border: 1px solid #e8e8e8; border-radius: 14px; overflow: hidden; }
+    .info-list div { padding: 14px 16px; display: flex; justify-content: space-between; color: #555; font-size: 14px; }
+    .info-list div + div { border-top: 1px solid #e8e8e8; }
+    .info-list strong { color: #222; }
+    .primary-btn { margin-top: auto; height: 54px; border: 1px solid #0b73d9; border-radius: 14px; background: #0b73d9; color: #fff; font: inherit; font-size: 17px; font-weight: 800; }
+    .secondary-btn { height: 54px; margin-top: 10px; border: 1px solid #d9d9d9; border-radius: 14px; background: #fff; color: #777; font: inherit; font-size: 16px; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <main class="phone-frame">
+    <header class="state-header">
+      <button class="back-btn" type="button" aria-label="뒤로가기">‹</button>
+      <h1>예약 확인</h1>
+    </header>
+    <section class="state-body">
+      <div class="lookup-card">
+        <h2>김창곤님의 예약 내역</h2>
+        <p>최근 1년간 접수된 방문 AS 예약을 조회합니다.</p>
+      </div>
+      <div class="empty-card">
+        <div class="empty-icon" aria-hidden="true">0</div>
+        <h2>예약 내역이 없습니다.</h2>
+        <p>현재 진행 중인 방문 AS 예약이 없습니다.<br>제품 점검이 필요하다면 새 예약을 진행해주세요.</p>
+      </div>
+      <div class="info-list">
+        <div><span>조회 기간</span><strong>최근 1년</strong></div>
+        <div><span>예약 상태</span><strong>전체</strong></div>
+      </div>
+      <button class="primary-btn" type="button">방문 AS 예약하기</button>
+      <button class="secondary-btn" type="button">고객지원 홈으로</button>
+    </section>
+  </main>
+</body>
+</html>

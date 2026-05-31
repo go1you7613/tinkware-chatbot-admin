@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>일괄 처리 — 팅크웨어 챗봇 관리자</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+
+  <style>
+    body { background: var(--color-bg-page); }
+
+    /* ── 스텝 진행 바 (Ant Design Step 패턴) ── */
+    .step-bar {
+      display: flex;
+      align-items: center;
+      padding: 20px 24px;
+      background: white;
+      border-radius: var(--radius-card);
+      border: 1px solid var(--color-border-light);
+      margin-bottom: 20px;
+    }
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 0;
+    }
+    .step-circle {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--color-border);
+      background: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 500;
+      color: var(--color-text-disabled);
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .step-info { min-width: 0; }
+    .step-label { font-size: 12px; color: var(--color-text-disabled); }
+    .step-title { font-size: 14px; font-weight: 400; color: var(--color-text-disabled); white-space: nowrap; }
+    .step-connector {
+      flex: 1;
+      height: 1px;
+      background: var(--color-border-light);
+      margin: 0 8px;
+    }
+
+    /* 완료 스텝 */
+    .step-item.done .step-circle {
+      background: var(--color-success);
+      border-color: var(--color-success);
+      color: white;
+    }
+    .step-item.done .step-label,
+    .step-item.done .step-title { color: var(--color-success); }
+
+    /* 현재 스텝 */
+    .step-item.active .step-circle {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: white;
+    }
+    .step-item.active .step-label { color: var(--color-primary); }
+    .step-item.active .step-title { color: var(--color-text-main); font-weight: 500; }
+
+    /* 완료된 구분선 */
+    .step-connector.done { background: var(--color-success); }
+
+    /* ── 스텝 패널 ── */
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+
+    /* ── 파일 업로드 영역 ── */
+    .upload-zone {
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius-card);
+      padding: 32px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: #FAFAFA;
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--color-primary);
+      background: var(--color-primary-light);
+    }
+    .upload-zone-icon { font-size: 36px; color: var(--color-text-disabled); margin-bottom: 8px; }
+    .upload-zone-text { font-size: 14px; color: var(--color-text-main); margin-bottom: 4px; }
+    .upload-zone-hint { font-size: 12px; color: var(--color-text-sub); }
+    .upload-zone.has-file { border-color: var(--color-success); background: rgba(82,196,26,0.04); }
+    .upload-zone.has-file .upload-zone-icon { color: var(--color-success); }
+
+    .file-info-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      background: rgba(82,196,26,0.08);
+      border: 1px solid rgba(82,196,26,0.3);
+      border-radius: var(--radius-card);
+      margin-top: 12px;
+    }
+    .file-info-name { font-size: 13px; font-weight: 500; color: var(--color-text-main); flex: 1; }
+    .file-info-size { font-size: 12px; color: var(--color-text-sub); }
+
+    /* ── 설정 섹션 ── */
+    .settings-card { margin-bottom: 12px; }
+    .settings-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: #FAFAFA;
+      border-bottom: 1px solid var(--color-border-light);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.15s;
+    }
+    .settings-section-header:hover { background: var(--color-primary-light); }
+    .settings-section-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 14px; font-weight: 500; color: var(--color-text-main);
+    }
+    .settings-section-count {
+      font-size: 12px; background: var(--color-primary); color: white;
+      border-radius: 9px; padding: 1px 7px; font-weight: 500;
+    }
+    .settings-section-body { padding: 16px 20px; }
+    .settings-section-body.collapsed { display: none; }
+
+    /* 컬럼 체크박스 그룹 */
+    .col-check-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .col-check-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-base);
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--color-text-main);
+      transition: border-color 0.15s, background 0.15s;
+      user-select: none;
+    }
+    .col-check-item input { accent-color: var(--color-primary); cursor: pointer; }
+    .col-check-item:has(input:checked) {
+      border-color: var(--color-primary);
+      background: var(--color-primary-light);
+      color: var(--color-primary);
+    }
+    .col-check-item.forced:has(input:checked) {
+      border-color: var(--color-warning);
+      background: rgba(250,173,20,0.1);
+      color: #D48806;
+    }
+    .masked-preview {
+      display: inline-flex; align-items: center; gap: 4px;
+      font-size: 12px; padding: 2px 8px;
+      background: rgba(250,173,20,0.12); color: #D48806;
+      border-radius: 3px; border: 1px solid rgba(250,173,20,0.3);
+    }
+
+    /* 패턴 체크박스 리스트 */
+    .pattern-check-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+    .pattern-check-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 7px 10px; border-radius: var(--radius-base);
+      font-size: 13px; cursor: pointer; transition: background 0.15s;
+    }
+    .pattern-check-row:hover { background: #FAFAFA; }
+    .pattern-check-row input { accent-color: var(--color-primary); flex-shrink: 0; cursor: pointer; }
+    .pattern-check-row .pcr-name { font-weight: 500; color: var(--color-text-main); min-width: 110px; }
+    .pattern-check-row .pcr-regex { font-family: monospace; font-size: 12px; color: var(--color-text-sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* 처리 옵션 그리드 */
+    .option-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .option-item label { font-size: 13px; font-weight: 500; color: var(--color-text-sub); display: block; margin-bottom: 6px; }
+
+    /* 제외 카테고리 */
+    .excl-cat-list { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; min-height: 36px; }
+    .excl-cat-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; background: #F5F5F5; border: 1px solid var(--color-border);
+      border-radius: var(--radius-base); font-size: 12px; color: var(--color-text-main);
+    }
+    .excl-cat-remove {
+      background: none; border: none; cursor: pointer;
+      color: var(--color-text-disabled); font-size: 14px; padding: 0; line-height: 1;
+    }
+    .excl-cat-remove:hover { color: var(--color-error); }
+
+    /* ── 처리 진행 화면 ── */
+    .processing-box {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 48px 24px; text-align: center;
+    }
+    .processing-icon { font-size: 48px; color: var(--color-primary); margin-bottom: 16px; }
+    .processing-title { font-size: 18px; font-weight: 500; margin-bottom: 8px; }
+    .processing-sub { font-size: 13px; color: var(--color-text-sub); margin-bottom: 24px; }
+    .processing-progress-wrap { width: 100%; max-width: 480px; }
+    .processing-stats {
+      display: flex; gap: 24px; justify-content: center; margin-top: 16px;
+      font-size: 13px; color: var(--color-text-sub);
+    }
+    .processing-stat strong { color: var(--color-text-main); font-weight: 500; }
+
+    /* ── 결과 영역 ── */
+    .result-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 16px;
+      align-items: start;
+    }
+    .result-layout.no-detail { grid-template-columns: 1fr; }
+
+    /* 통계 카드 행 */
+    .stat-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .result-stat-card {
+      background: white;
+      border: 1px solid var(--color-border-light);
+      border-radius: var(--radius-card);
+      padding: 14px 16px;
+      text-align: center;
+    }
+    .result-stat-value { font-size: 22px; font-weight: 700; color: var(--color-text-main); }
+    .result-stat-label { font-size: 12px; color: var(--color-text-sub); margin-top: 3px; }
+
+    /* 결과 그리드 */
+    .result-grid-wrap { overflow-x: auto; }
+    .result-grid {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .result-grid th {
+      background: #FAFAFA;
+      color: var(--color-text-sub);
+      font-weight: 500;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--color-border-light);
+      white-space: nowrap;
+    }
+    .result-grid td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--color-border-light);
+      vertical-align: middle;
+    }
+    .result-grid tr:hover td { background: #FAFAFA; cursor: pointer; }
+    .result-grid tr.selected td { background: var(--color-primary-light); }
+    .result-text-cell {
+      max-width: 360px; overflow: hidden;
+      text-overflow: ellipsis; white-space: nowrap;
+      color: var(--color-text-main);
+    }
+    .pii-count-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 22px; height: 20px; padding: 0 6px;
+      font-size: 11px; font-weight: 500;
+      border-radius: 10px;
+    }
+    .pii-count-badge.has { background: rgba(255,77,79,0.12); color: var(--color-error); }
+    .pii-count-badge.none { background: rgba(0,0,0,0.04); color: var(--color-text-disabled); }
+    .status-chip {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500;
+    }
+    .status-chip.detected   { background: rgba(255,77,79,0.1);  color: var(--color-error); }
+    .status-chip.clean      { background: rgba(82,196,26,0.1);  color: var(--color-success); }
+    .status-chip.excluded   { background: rgba(0,0,0,0.06);      color: var(--color-text-sub); }
+
+    /* ── 상세 슬라이드 패널 ── */
+    .detail-panel {
+      background: white;
+      border: 1px solid var(--color-border-light);
+      border-radius: var(--radius-card);
+      overflow: hidden;
+      display: none;
+    }
+    .detail-panel.open { display: block; }
+    .detail-panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--color-border-light);
+      background: #FAFAFA;
+    }
+    .detail-panel-title { font-size: 14px; font-weight: 500; }
+    .detail-close-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--color-text-sub); font-size: 18px;
+      width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+      border-radius: var(--radius-base); transition: background 0.15s, color 0.15s;
+    }
+    .detail-close-btn:hover { background: #F5F5F5; color: var(--color-text-main); }
+    .detail-panel-body { padding: 16px; }
+    .detail-section { margin-bottom: 16px; }
+    .detail-section-title {
+      font-size: 12px; font-weight: 500; color: var(--color-text-sub);
+      text-transform: uppercase; letter-spacing: 0.5px;
+      margin-bottom: 8px; padding-bottom: 4px;
+      border-bottom: 1px solid var(--color-border-light);
+    }
+    .detail-text-box {
+      font-size: 13px; line-height: 1.7;
+      padding: 10px 12px; background: #FAFAFA;
+      border: 1px solid var(--color-border-light);
+      border-radius: var(--radius-base);
+      word-break: break-all;
+    }
+    .pii-highlight { background: rgba(255,77,79,0.18); color: var(--color-error); border-radius: 2px; padding: 0 2px; }
+    .pii-item-row {
+      display: flex; align-items: center; gap: 8px;
+      padding: 5px 0; border-bottom: 1px solid var(--color-border-light);
+      font-size: 13px;
+    }
+    .pii-item-row:last-child { border-bottom: none; }
+    .pii-type-chip {
+      font-size: 11px; padding: 1px 7px; border-radius: 9px;
+      background: rgba(255,77,79,0.1); color: var(--color-error); font-weight: 500;
+      flex-shrink: 0;
+    }
+    .pii-value { font-family: monospace; font-size: 12px; color: var(--color-text-main); }
+
+    /* 결과 툴바 */
+    .result-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .result-filter-tabs {
+      display: flex; gap: 4px;
+    }
+    .filter-tab {
+      padding: 5px 14px; border: 1px solid var(--color-border);
+      border-radius: var(--radius-base); font-size: 13px;
+      color: var(--color-text-sub); cursor: pointer;
+      background: white; transition: all 0.15s;
+    }
+    .filter-tab.active { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); font-weight: 500; }
+    .filter-tab:hover:not(.active) { border-color: var(--color-primary); color: var(--color-primary); }
+
+    /* 액션 버튼 그룹 */
+    .step-actions {
+      display: flex; gap: 8px; justify-content: flex-end;
+      margin-top: 20px; padding-top: 16px;
+      border-top: 1px solid var(--color-border-light);
+    }
+  </style>
+</head>
+<body data-admin-menu="data-management" data-admin-submenu="일괄 처리" data-admin-page="batch-processing">
+
+  <div id="adminHeader"></div>
+  <div id="adminSidebar"></div>
+
+  <div class="main-wrap" id="mainWrap">
+    <div class="page-content">
+
+      <!-- 페이지 헤더 -->
+      <div class="page-header">
+        <div class="page-title">일괄 처리</div>
+        <div class="breadcrumb-row">
+          <span>홈</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span>데이터 관리</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span style="color:var(--color-text-main);">일괄 처리</span>
+        </div>
+      </div>
+
+      <!-- 스텝 진행 바 -->
+      <div class="step-bar" id="stepBar">
+        <div class="step-item active" id="stepItem1">
+          <div class="step-circle" id="stepCircle1">1</div>
+          <div class="step-info">
+            <div class="step-label">STEP 1</div>
+            <div class="step-title">파일 업로드</div>
+          </div>
+        </div>
+        <div class="step-connector" id="stepConn1"></div>
+        <div class="step-item" id="stepItem2">
+          <div class="step-circle" id="stepCircle2">2</div>
+          <div class="step-info">
+            <div class="step-label">STEP 2</div>
+            <div class="step-title">처리 설정</div>
+          </div>
+        </div>
+        <div class="step-connector" id="stepConn2"></div>
+        <div class="step-item" id="stepItem3">
+          <div class="step-circle" id="stepCircle3">3</div>
+          <div class="step-info">
+            <div class="step-label">STEP 3</div>
+            <div class="step-title">처리 시작</div>
+          </div>
+        </div>
+        <div class="step-connector" id="stepConn3"></div>
+        <div class="step-item" id="stepItem4">
+          <div class="step-circle" id="stepCircle4">4</div>
+          <div class="step-info">
+            <div class="step-label">STEP 4</div>
+            <div class="step-title">결과 확인</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ STEP 1: 파일 업로드 ══ -->
+      <div class="step-panel active" id="panel1">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <span>파일 업로드</span>
+            <span style="font-size:12px;color:var(--color-text-sub);">지원 형식: .xlsx, .csv</span>
+          </div>
+          <div class="admin-card-body">
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+              <div class="upload-zone-icon"><i class="bi bi-cloud-upload"></i></div>
+              <div class="upload-zone-text">클릭하거나 파일을 여기에 끌어다 놓으세요</div>
+              <div class="upload-zone-hint">최대 200MB · Excel(.xlsx), CSV 파일 지원</div>
+            </div>
+            <input type="file" id="fileInput" accept=".xlsx,.csv" style="display:none;">
+
+            <div class="file-info-bar" id="fileInfoBar" style="display:none;">
+              <i class="bi bi-file-earmark-spreadsheet" style="font-size:18px;color:var(--color-success);"></i>
+              <span class="file-info-name" id="fileName">—</span>
+              <span class="file-info-size" id="fileSize">—</span>
+              <button class="btn-default btn-sm" id="fileRemoveBtn">
+                <i class="bi bi-x"></i> 제거
+              </button>
+            </div>
+
+            <div class="step-actions">
+              <button class="btn-primary" id="step1NextBtn" disabled>
+                다음 단계 <i class="bi bi-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ STEP 2: 처리 설정 ══ -->
+      <div class="step-panel" id="panel2">
+
+        <!-- 파일 요약 -->
+        <div class="admin-card" style="margin-bottom:12px;">
+          <div class="admin-card-body" style="padding:12px 20px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <i class="bi bi-file-earmark-check" style="font-size:18px;color:var(--color-success);"></i>
+              <span id="step2FileName" style="font-size:14px;font-weight:500;"></span>
+              <span id="step2FileSize" style="font-size:12px;color:var(--color-text-sub);"></span>
+              <button class="btn-default btn-sm" onclick="goStep(1)">
+                <i class="bi bi-arrow-left"></i> 파일 변경
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 마스킹 대상 컬럼 -->
+        <div class="admin-card settings-card">
+          <div class="settings-section-header" onclick="toggleSection(this)">
+            <div class="settings-section-title">
+              <i class="bi bi-table"></i>
+              마스킹 대상 컬럼
+              <span class="settings-section-count" id="maskColCount">2</span>
+            </div>
+            <i class="bi bi-chevron-up" style="color:var(--color-text-sub);transition:transform 0.2s;"></i>
+          </div>
+          <div class="settings-section-body" id="maskColBody">
+            <div style="font-size:12px;color:var(--color-text-sub);margin-bottom:10px;">
+              PII 탐지 후 마스킹을 적용할 컬럼을 선택하세요.
+            </div>
+            <div class="col-check-group" id="maskColGroup">
+              <!-- JS로 렌더링 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 강제 마스킹 컬럼 -->
+        <div class="admin-card settings-card">
+          <div class="settings-section-header" onclick="toggleSection(this)">
+            <div class="settings-section-title">
+              <i class="bi bi-shield-fill-exclamation" style="color:var(--color-warning);"></i>
+              강제 마스킹 컬럼
+              <span class="settings-section-count" style="background:var(--color-warning);" id="forcedColCount">1</span>
+            </div>
+            <i class="bi bi-chevron-up" style="color:var(--color-text-sub);transition:transform 0.2s;"></i>
+          </div>
+          <div class="settings-section-body" id="forcedColBody">
+            <div style="font-size:12px;color:var(--color-text-sub);margin-bottom:10px;">
+              PII 스캔 없이 해당 컬럼 전체 값을 <code style="background:#f5f5f5;padding:1px 5px;border-radius:3px;">[MASKED]</code>로 치환합니다.
+            </div>
+            <div class="col-check-group" id="forcedColGroup">
+              <!-- JS로 렌더링 -->
+            </div>
+            <div id="forcedPreviewArea" style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;"></div>
+          </div>
+        </div>
+
+        <!-- 처리 옵션 -->
+        <div class="admin-card settings-card">
+          <div class="settings-section-header" onclick="toggleSection(this)">
+            <div class="settings-section-title">
+              <i class="bi bi-sliders"></i>
+              처리 옵션
+            </div>
+            <i class="bi bi-chevron-up" style="color:var(--color-text-sub);transition:transform 0.2s;"></i>
+          </div>
+          <div class="settings-section-body">
+            <div class="option-grid">
+              <div class="option-item">
+                <label>LLM 처리</label>
+                <label class="toggle-switch">
+                  <input type="checkbox" id="optLLM" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+                <div style="font-size:12px;color:var(--color-text-sub);margin-top:4px;">Ollama LLM 사용</div>
+              </div>
+              <div class="option-item">
+                <label>배치 크기</label>
+                <select class="form-select" id="optBatch" style="height:36px;">
+                  <option>10</option>
+                  <option>20</option>
+                  <option selected>50</option>
+                  <option>100</option>
+                </select>
+              </div>
+              <div class="option-item">
+                <label>마스킹 유형</label>
+                <select class="form-select" id="optMaskType" style="height:36px;">
+                  <option>[MASKED]</option>
+                  <option>***</option>
+                  <option>■■■</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- 자동 제외 활성화 -->
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--color-border-light);">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="optAutoExclude" onchange="toggleAutoExclude(this.checked)">
+                  <span class="toggle-slider"></span>
+                </label>
+                <span style="font-size:14px;font-weight:500;">자동 제외 활성화</span>
+                <span style="font-size:12px;color:var(--color-text-sub);">PII 밀도 기준으로 행 자동 제외</span>
+              </div>
+              <div id="autoExcludeOptions" style="display:none;padding:12px;background:#FAFAFA;border-radius:var(--radius-card);border:1px solid var(--color-border-light);">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                  <div>
+                    <label style="font-size:12px;color:var(--color-text-sub);display:block;margin-bottom:6px;">PII 밀도 임계값 (%)</label>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <input type="range" class="form-range" id="piiDensity" min="0" max="100" value="50" style="flex:1;" oninput="this.nextElementSibling.textContent=this.value+'%'">
+                      <span style="font-size:13px;font-weight:500;min-width:36px;text-align:right;color:var(--color-primary);">50%</span>
+                    </div>
+                  </div>
+                  <div>
+                    <label style="font-size:12px;color:var(--color-text-sub);display:block;margin-bottom:6px;">PII 개수 범위</label>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <input type="number" class="form-input" value="0" min="0" style="height:36px;width:70px;" placeholder="최소">
+                      <span style="color:var(--color-text-sub);">~</span>
+                      <input type="number" class="form-input" value="10" min="0" style="height:36px;width:70px;" placeholder="최대">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 내장 패턴 선택 -->
+        <div class="admin-card settings-card">
+          <div class="settings-section-header" onclick="toggleSection(this)">
+            <div class="settings-section-title">
+              <i class="bi bi-shield-check"></i>
+              내장 패턴 선택
+              <span class="settings-section-count" id="builtinSelCount">8</span>
+            </div>
+            <i class="bi bi-chevron-up" style="color:var(--color-text-sub);transition:transform 0.2s;"></i>
+          </div>
+          <div class="settings-section-body">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+              <span style="font-size:12px;color:var(--color-text-sub);">활성화된 내장 패턴 중 적용할 항목을 선택하세요.</span>
+              <button class="btn-default btn-sm" onclick="selectAllBuiltin(true)">전체 선택</button>
+            </div>
+            <div class="pattern-check-list" id="builtinPatternList"></div>
+          </div>
+        </div>
+
+        <!-- 커스텀 패턴 선택 -->
+        <div class="admin-card settings-card">
+          <div class="settings-section-header" onclick="toggleSection(this)">
+            <div class="settings-section-title">
+              <i class="bi bi-puzzle"></i>
+              커스텀 패턴 선택
+              <span class="settings-section-count" id="customSelCount">9</span>
+            </div>
+            <i class="bi bi-chevron-up" style="color:var(--color-text-sub);transition:transform 0.2s;"></i>
+          </div>
+          <div class="settings-section-body">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+              <span style="font-size:12px;color:var(--color-text-sub);">활성화된 커스텀 패턴 중 적용할 항목을 선택하세요.</span>
+              <button class="btn-default btn-sm" onclick="selectAllCustom(true)">전체 선택</button>
+            </div>
+            <div class="pattern-check-list" id="customPatternList"></div>
+          </div>
+        </div>
+
+        <!-- 제외 카테고리 -->
+        <div class="admin-card settings-card">
+          <div class="settings-section-header" onclick="toggleSection(this)">
+            <div class="settings-section-title">
+              <i class="bi bi-funnel"></i>
+              제외 카테고리
+              <span class="settings-section-count" id="exclCatCount">0</span>
+            </div>
+            <i class="bi bi-chevron-up" style="color:var(--color-text-sub);transition:transform 0.2s;"></i>
+          </div>
+          <div class="settings-section-body">
+            <div class="excl-cat-list" id="exclCatList">
+              <span style="font-size:12px;color:var(--color-text-disabled);">추가된 제외 카테고리가 없습니다.</span>
+            </div>
+            <div style="display:flex;gap:8px;">
+              <input type="text" class="form-input" id="exclCatInput" placeholder="제외할 카테고리 입력" style="height:36px;flex:1;" onkeydown="if(event.key==='Enter')addExclCat()">
+              <button class="btn-default btn-sm" onclick="addExclCat()"><i class="bi bi-plus"></i> 추가</button>
+              <button class="btn-default btn-sm" onclick="loadExclCat()"><i class="bi bi-folder2-open"></i> 불러오기</button>
+              <button class="btn-default btn-sm" onclick="saveExclCat()"><i class="bi bi-save"></i> 저장</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button class="btn-default" onclick="goStep(1)"><i class="bi bi-arrow-left"></i> 이전</button>
+          <button class="btn-primary" onclick="goStep(3)">
+            처리 설정 완료 <i class="bi bi-arrow-right"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- ══ STEP 3: 처리 시작 ══ -->
+      <div class="step-panel" id="panel3">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <span>처리 설정 요약</span>
+          </div>
+          <div class="admin-card-body">
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;" id="settingSummary">
+              <!-- JS 렌더링 -->
+            </div>
+            <div style="padding:16px;background:#FAFAFA;border-radius:var(--radius-card);border:1px solid var(--color-border-light);font-size:13px;color:var(--color-text-sub);">
+              <i class="bi bi-info-circle" style="margin-right:6px;"></i>
+              처리 시작 후에는 설정을 변경할 수 없습니다. 설정 내용을 확인한 후 시작하세요.
+            </div>
+          </div>
+        </div>
+
+        <!-- 처리 진행 영역 -->
+        <div class="admin-card" id="processingArea" style="display:none;margin-top:12px;">
+          <div class="admin-card-body">
+            <div class="processing-box">
+              <div class="processing-icon"><i class="bi bi-arrow-repeat" id="processingIcon" style="animation:spin 1s linear infinite;"></i></div>
+              <div class="processing-title" id="processingTitle">처리 중입니다...</div>
+              <div class="processing-sub" id="processingSubtitle">잠시만 기다려 주세요. 취소 버튼을 누르면 현재 배치 완료 후 중단됩니다.</div>
+              <div class="processing-progress-wrap">
+                <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--color-text-sub);margin-bottom:6px;">
+                  <span id="processingStatus">파일 분석 중...</span>
+                  <span id="processingPct">0%</span>
+                </div>
+                <div class="progress-bar-wrap" style="height:10px;">
+                  <div class="progress-bar-fill" id="processingBar" style="width:0%;"></div>
+                </div>
+              </div>
+              <div class="processing-stats" id="processingStats" style="display:none;">
+                <span>전체 <strong id="statTotal">0</strong>건</span>
+                <span>완료 <strong id="statDone">0</strong>건</span>
+                <span>PII 검출 <strong id="statPii" style="color:var(--color-error);">0</strong>건</span>
+                <span>미검출 <strong id="statClean">0</strong>건</span>
+                <span>제외 <strong id="statExcl">0</strong>건</span>
+              </div>
+              <button class="btn-default btn-sm" id="cancelBtn" style="margin-top:16px;" onclick="cancelProcessing()">
+                <i class="bi bi-stop-circle"></i> 처리 취소
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions" id="step3Actions">
+          <button class="btn-default" onclick="goStep(2)"><i class="bi bi-arrow-left"></i> 설정 변경</button>
+          <button class="btn-primary btn-lg" id="startProcessBtn" onclick="startProcessing()">
+            <i class="bi bi-play-fill"></i> 일괄 처리 시작
+          </button>
+        </div>
+      </div>
+
+      <!-- ══ STEP 4: 결과 확인 ══ -->
+      <div class="step-panel" id="panel4">
+
+        <!-- 통계 카드 -->
+        <div class="stat-row" id="resultStatRow"></div>
+
+        <!-- 툴바 -->
+        <div class="result-toolbar">
+          <div class="result-filter-tabs" id="filterTabs">
+            <div class="filter-tab active" data-filter="all">전체 <span id="fAll">0</span></div>
+            <div class="filter-tab" data-filter="detected">PII 검출 <span id="fDetected">0</span></div>
+            <div class="filter-tab" data-filter="clean">미검출 <span id="fClean">0</span></div>
+            <div class="filter-tab" data-filter="excluded">제외 <span id="fExcl">0</span></div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input type="text" class="form-input" id="gridSearch" placeholder="텍스트 검색..." style="height:34px;width:200px;" oninput="filterGrid()">
+            <button class="btn-default btn-sm" onclick="downloadCSV('masked')"><i class="bi bi-download"></i> 마스킹 CSV</button>
+            <button class="btn-default btn-sm" onclick="downloadCSV('clean')"><i class="bi bi-download"></i> 미검출 CSV</button>
+            <button class="btn-default btn-sm" onclick="downloadCSV('excluded')"><i class="bi bi-download"></i> 제외 CSV</button>
+          </div>
+        </div>
+
+        <!-- 그리드 + 상세 패널 -->
+        <div class="result-layout" id="resultLayout">
+          <div>
+            <div class="admin-card">
+              <div class="result-grid-wrap">
+                <table class="result-grid" id="resultTable">
+                  <thead>
+                    <tr>
+                      <th style="width:36px;"><input type="checkbox" id="checkAll" onchange="toggleAllCheck(this.checked)" style="accent-color:var(--color-primary);"></th>
+                      <th style="width:50px;">No.</th>
+                      <th style="width:80px;">상담유형</th>
+                      <th>내용</th>
+                      <th style="width:70px;text-align:center;">PII</th>
+                      <th style="width:90px;">상태</th>
+                    </tr>
+                  </thead>
+                  <tbody id="resultBody"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 상세 패널 -->
+          <div class="detail-panel" id="detailPanel">
+            <div class="detail-panel-header">
+              <span class="detail-panel-title" id="detailTitle">상세 보기</span>
+              <button class="detail-close-btn" onclick="closeDetail()"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="detail-panel-body" id="detailBody"></div>
+          </div>
+        </div>
+
+        <div class="step-actions" style="margin-top:16px;">
+          <button class="btn-default" onclick="resetAll()"><i class="bi bi-arrow-counterclockwise"></i> 새 작업 시작</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+  /* ══════════════════════
+     더미 데이터
+  ══════════════════════ */
+  const COLUMNS = ['NO','모델명','제목','상담유형1','상담유형2','상담유형3','문의내용','상담내용','채널','업무유형'];
+
+  const BUILTIN_PATTERNS = [
+    { id:'b1', name:'전화번호',     regex:'01[0-9]-?\\d{3,4}-?\\d{4}',           checked:true  },
+    { id:'b2', name:'이메일',       regex:'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+',     checked:true  },
+    { id:'b3', name:'주민등록번호', regex:'\\d{6}-[1-4]\\d{6}',                   checked:true  },
+    { id:'b4', name:'생년월일',     regex:'\\d{4}[./]\\d{2}[./]\\d{2}',           checked:false },
+    { id:'b5', name:'계좌번호',     regex:'\\d{3,4}-\\d{4,6}-\\d{4,6}',           checked:true  },
+    { id:'b6', name:'카드번호',     regex:'\\d{4}-\\d{4}-\\d{4}-\\d{4}',          checked:true  },
+    { id:'b7', name:'IP 주소',      regex:'\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d', checked:false },
+    { id:'b8', name:'URL',          regex:'https?://[^\\s]+',                       checked:false },
+  ];
+
+  const CUSTOM_PATTERNS = [
+    { id:'c1', name:'지역센터_마스킹',  regex:'(서울|부산|대구)s*(센터|지점)',    checked:true  },
+    { id:'c2', name:'비밀번호',          regex:'(?:비밀번호|PW)s*[:]?s*S{4,}',  checked:true  },
+    { id:'c3', name:'고객명 추출',       regex:'(?<=고객명:)[가-힣]{2,4}',          checked:false },
+    { id:'c4', name:'주문번호',          regex:'(?<=주문번호:)[A-Z0-9-]+',          checked:true  },
+    { id:'c5', name:'카카오 ID',         regex:'(?<=카카오:)[a-zA-Z0-9_.]+',        checked:false },
+    { id:'c6', name:'제품키',            regex:'(?<=제품키:)[A-Z0-9-]+',            checked:true  },
+    { id:'c7', name:'아이디',            regex:'(?<=아이디:)[^ ]+',                 checked:true  },
+    { id:'c8', name:'예금주',            regex:'(?<=예금주:)[가-힣]{2,4}',          checked:true  },
+    { id:'c9', name:'주소 패턴',         regex:'(?<=주소:)(.+?)(?=s+|$)',           checked:false },
+  ];
+
+  const SAMPLE_ROWS = [
+    { type:'AS문의',  text:'고객명: 홍길동, 연락처: 010-1234-5678 제품 AS 요청드립니다.',               pii:2, status:'detected' },
+    { type:'일반문의',text:'블랙박스 영상 다운로드 방법을 알고 싶습니다.',                                pii:0, status:'clean'    },
+    { type:'AS문의',  text:'주민번호: 901231-1234567 확인 부탁드립니다. 카드: 1234-5678-9012-3456',      pii:2, status:'detected' },
+    { type:'환불문의',text:'주문번호: ORDER-2026-001234 환불 요청합니다.',                                pii:1, status:'detected' },
+    { type:'일반문의',text:'제품 설명서 PDF를 받고 싶습니다.',                                            pii:0, status:'clean'    },
+    { type:'AS문의',  text:'이메일: user@example.com 으로 결과 보내주세요.',                              pii:1, status:'detected' },
+    { type:'스팸',    text:'광고 문자 관련 문의드립니다.',                                                pii:0, status:'excluded' },
+    { type:'일반문의',text:'배송 현황을 알고 싶습니다. 주문번호: TW-20260530-9887',                      pii:1, status:'detected' },
+    { type:'AS문의',  text:'계좌번호: 110-123-456789 환불 처리 부탁드립니다.',                           pii:1, status:'detected' },
+    { type:'일반문의',text:'사용 설명서 문의입니다. 별도 개인정보 없음.',                                 pii:0, status:'clean'    },
+    { type:'일반문의',text:'앱 업데이트 후 오류가 발생합니다. 버전 정보 첨부합니다.',                    pii:0, status:'clean'    },
+    { type:'AS문의',  text:'고객님 연락처 010-9876-5432 수신 동의 확인됩니다.',                          pii:1, status:'detected' },
+  ];
+
+  let uploadedFile = null;
+  let currentStep = 1;
+  let maskCols   = new Set(['문의내용','상담내용']);
+  let forcedCols = new Set(['모델명']);
+  let exclCats   = [];
+  let processingTimer = null;
+  let selectedRow = null;
+  let currentFilter = 'all';
+
+  /* ══════════════════════
+     스텝 관리
+  ══════════════════════ */
+  function goStep(n) {
+    // 유효성 검사
+    if (n === 2 && !uploadedFile) { AdminToast.show('파일을 먼저 업로드해 주세요.', 'warning'); return; }
+
+    // 스텝 이동
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel' + n).classList.add('active');
+    currentStep = n;
+    updateStepBar();
+
+    // 스텝별 초기화
+    if (n === 2) renderStep2();
+    if (n === 3) renderStep3Summary();
+    if (n === 4) renderResults();
+  }
+
+  function updateStepBar() {
+    for (let i = 1; i <= 4; i++) {
+      const item   = document.getElementById('stepItem'   + i);
+      const circle = document.getElementById('stepCircle' + i);
+      const conn   = document.getElementById('stepConn'   + i);
+      item.classList.remove('active','done');
+      if (conn) conn.classList.remove('done');
+      if (i < currentStep) {
+        item.classList.add('done');
+        circle.innerHTML = '<i class="bi bi-check-lg"></i>';
+        if (conn) conn.classList.add('done');
+      } else if (i === currentStep) {
+        item.classList.add('active');
+        circle.textContent = i;
+      } else {
+        circle.textContent = i;
+      }
+    }
+  }
+
+  /* ══════════════════════
+     STEP 1: 파일 업로드
+  ══════════════════════ */
+  document.getElementById('fileInput').addEventListener('change', function() {
+    const f = this.files[0];
+    if (f) handleFile(f);
+  });
+
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault(); zone.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+
+  function handleFile(f) {
+    const allowed = ['.xlsx','.csv'];
+    const ext = '.' + f.name.split('.').pop().toLowerCase();
+    if (!allowed.includes(ext)) { AdminToast.show('xlsx, csv 파일만 업로드 가능합니다.', 'error'); return; }
+    uploadedFile = f;
+    document.getElementById('uploadZone').classList.add('has-file');
+    document.getElementById('uploadZone').querySelector('.upload-zone-icon').innerHTML = '<i class="bi bi-check-circle-fill"></i>';
+    document.getElementById('uploadZone').querySelector('.upload-zone-text').textContent = f.name + ' 선택됨';
+    document.getElementById('fileInfoBar').style.display = 'flex';
+    document.getElementById('fileName').textContent = f.name;
+    document.getElementById('fileSize').textContent = (f.size / 1024).toFixed(1) + ' KB';
+    document.getElementById('step1NextBtn').disabled = false;
+    AdminToast.show('파일이 업로드됐습니다.');
+  }
+
+  document.getElementById('fileRemoveBtn').addEventListener('click', () => {
+    uploadedFile = null;
+    document.getElementById('fileInput').value = '';
+    document.getElementById('uploadZone').classList.remove('has-file');
+    document.getElementById('uploadZone').querySelector('.upload-zone-icon').innerHTML = '<i class="bi bi-cloud-upload"></i>';
+    document.getElementById('uploadZone').querySelector('.upload-zone-text').textContent = '클릭하거나 파일을 여기에 끌어다 놓으세요';
+    document.getElementById('fileInfoBar').style.display = 'none';
+    document.getElementById('step1NextBtn').disabled = true;
+  });
+
+  document.getElementById('step1NextBtn').addEventListener('click', () => goStep(2));
+
+  /* ══════════════════════
+     STEP 2: 처리 설정
+  ══════════════════════ */
+  function renderStep2() {
+    document.getElementById('step2FileName').textContent = uploadedFile?.name || '';
+    document.getElementById('step2FileSize').textContent = uploadedFile ? ((uploadedFile.size/1024).toFixed(1)+' KB') : '';
+
+    // 마스킹 대상 컬럼
+    const maskGroup = document.getElementById('maskColGroup');
+    maskGroup.innerHTML = COLUMNS.map(col => `
+      <label class="col-check-item">
+        <input type="checkbox" ${maskCols.has(col)?'checked':''} onchange="toggleMaskCol('${col}',this.checked)"> ${col}
+      </label>`).join('');
+    updateMaskCount();
+
+    // 강제 마스킹 컬럼
+    const forcedGroup = document.getElementById('forcedColGroup');
+    forcedGroup.innerHTML = COLUMNS.map(col => `
+      <label class="col-check-item forced">
+        <input type="checkbox" ${forcedCols.has(col)?'checked':''} onchange="toggleForcedCol('${col}',this.checked)"> ${col}
+      </label>`).join('');
+    updateForcedPreview();
+
+    // 내장 패턴
+    document.getElementById('builtinPatternList').innerHTML = BUILTIN_PATTERNS.map(p => `
+      <label class="pattern-check-row">
+        <input type="checkbox" ${p.checked?'checked':''} onchange="toggleBuiltinPat('${p.id}',this.checked)">
+        <span class="pcr-name">${p.name}</span>
+        <span class="pcr-regex">${p.regex}</span>
+      </label>`).join('');
+    updateBuiltinCount();
+
+    // 커스텀 패턴
+    document.getElementById('customPatternList').innerHTML = CUSTOM_PATTERNS.map(p => `
+      <label class="pattern-check-row">
+        <input type="checkbox" ${p.checked?'checked':''} onchange="toggleCustomPat('${p.id}',this.checked)">
+        <span class="pcr-name">${p.name}</span>
+        <span class="pcr-regex">${p.regex}</span>
+      </label>`).join('');
+    updateCustomCount();
+
+    renderExclCats();
+  }
+
+  function toggleMaskCol(col, checked) {
+    checked ? maskCols.add(col) : maskCols.delete(col);
+    updateMaskCount();
+  }
+  function updateMaskCount() {
+    document.getElementById('maskColCount').textContent = maskCols.size;
+  }
+
+  function toggleForcedCol(col, checked) {
+    checked ? forcedCols.add(col) : forcedCols.delete(col);
+    updateForcedPreview();
+  }
+  function updateForcedPreview() {
+    document.getElementById('forcedColCount').textContent = forcedCols.size;
+    const area = document.getElementById('forcedPreviewArea');
+    area.innerHTML = [...forcedCols].map(c =>
+      `<span class="masked-preview"><i class="bi bi-arrow-right"></i>${c} → [MASKED]</span>`).join('');
+  }
+
+  function toggleBuiltinPat(id, checked) {
+    const p = BUILTIN_PATTERNS.find(x=>x.id===id); if(p) p.checked=checked;
+    updateBuiltinCount();
+  }
+  function updateBuiltinCount() {
+    document.getElementById('builtinSelCount').textContent = BUILTIN_PATTERNS.filter(p=>p.checked).length;
+  }
+  function selectAllBuiltin(v) {
+    BUILTIN_PATTERNS.forEach(p=>p.checked=v);
+    document.querySelectorAll('#builtinPatternList input').forEach(el=>el.checked=v);
+    updateBuiltinCount();
+  }
+
+  function toggleCustomPat(id, checked) {
+    const p = CUSTOM_PATTERNS.find(x=>x.id===id); if(p) p.checked=checked;
+    updateCustomCount();
+  }
+  function updateCustomCount() {
+    document.getElementById('customSelCount').textContent = CUSTOM_PATTERNS.filter(p=>p.checked).length;
+  }
+  function selectAllCustom(v) {
+    CUSTOM_PATTERNS.forEach(p=>p.checked=v);
+    document.querySelectorAll('#customPatternList input').forEach(el=>el.checked=v);
+    updateCustomCount();
+  }
+
+  function toggleAutoExclude(v) {
+    document.getElementById('autoExcludeOptions').style.display = v ? 'block' : 'none';
+  }
+
+  // 제외 카테고리
+  function addExclCat() {
+    const v = document.getElementById('exclCatInput').value.trim();
+    if (!v) return;
+    if (exclCats.includes(v)) { AdminToast.show('이미 추가된 카테고리입니다.', 'warning'); return; }
+    exclCats.push(v);
+    document.getElementById('exclCatInput').value = '';
+    renderExclCats();
+  }
+  function removeExclCat(v) {
+    exclCats = exclCats.filter(c=>c!==v);
+    renderExclCats();
+  }
+  function renderExclCats() {
+    const list = document.getElementById('exclCatList');
+    document.getElementById('exclCatCount').textContent = exclCats.length;
+    list.innerHTML = exclCats.length === 0
+      ? '<span style="font-size:12px;color:var(--color-text-disabled);">추가된 제외 카테고리가 없습니다.</span>'
+      : exclCats.map(c => `
+          <span class="excl-cat-tag">
+            ${c}
+            <button class="excl-cat-remove" onclick="removeExclCat('${c}')">×</button>
+          </span>`).join('');
+  }
+  function loadExclCat() {
+    exclCats = ['스팸','광고','테스트','홍보'];
+    renderExclCats();
+    AdminToast.show('저장된 제외 카테고리를 불러왔습니다.');
+  }
+  function saveExclCat() {
+    AdminToast.show('제외 카테고리가 저장됐습니다.');
+  }
+
+  // 섹션 접기/펼치기
+  function toggleSection(header) {
+    const body = header.nextElementSibling;
+    const icon = header.querySelector('.bi-chevron-up, .bi-chevron-down');
+    const isOpen = !body.classList.contains('collapsed');
+    body.classList.toggle('collapsed', isOpen);
+    if (icon) {
+      icon.className = icon.className.replace(isOpen ? 'bi-chevron-up' : 'bi-chevron-down',
+                                              isOpen ? 'bi-chevron-down' : 'bi-chevron-up');
+    }
+  }
+
+  /* ══════════════════════
+     STEP 3: 처리 시작
+  ══════════════════════ */
+  function renderStep3Summary() {
+    const sum = document.getElementById('settingSummary');
+    const items = [
+      { label:'마스킹 대상 컬럼', value: maskCols.size + '개', icon:'bi-table' },
+      { label:'강제 마스킹 컬럼', value: forcedCols.size + '개', icon:'bi-shield-fill-exclamation' },
+      { label:'내장 패턴',        value: BUILTIN_PATTERNS.filter(p=>p.checked).length + '개', icon:'bi-shield-check' },
+      { label:'커스텀 패턴',      value: CUSTOM_PATTERNS.filter(p=>p.checked).length + '개',  icon:'bi-puzzle' },
+    ];
+    sum.innerHTML = items.map(i => `
+      <div style="padding:14px 16px;background:#FAFAFA;border:1px solid var(--color-border-light);border-radius:var(--radius-card);text-align:center;">
+        <i class="bi ${i.icon}" style="font-size:20px;color:var(--color-primary);display:block;margin-bottom:6px;"></i>
+        <div style="font-size:18px;font-weight:700;">${i.value}</div>
+        <div style="font-size:12px;color:var(--color-text-sub);margin-top:2px;">${i.label}</div>
+      </div>`).join('');
+  }
+
+  function startProcessing() {
+    document.getElementById('step3Actions').style.display = 'none';
+    document.getElementById('processingArea').style.display = 'block';
+    document.getElementById('processingStats').style.display = 'flex';
+
+    const total = SAMPLE_ROWS.length;
+    let done = 0;
+    const steps = ['파일 분석 중...','패턴 매핑 중...','PII 탐지 중...','마스킹 처리 중...','결과 저장 중...'];
+    let stepIdx = 0;
+
+    processingTimer = setInterval(() => {
+      done++;
+      const pct = Math.round((done / total) * 100);
+      document.getElementById('processingBar').style.width = pct + '%';
+      document.getElementById('processingPct').textContent = pct + '%';
+      if (stepIdx < steps.length - 1 && done > (total / steps.length) * (stepIdx + 1)) stepIdx++;
+      document.getElementById('processingStatus').textContent = steps[stepIdx];
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statDone').textContent = done;
+      document.getElementById('statPii').textContent = SAMPLE_ROWS.filter((r,i) => i<done && r.status==='detected').length;
+      document.getElementById('statClean').textContent = SAMPLE_ROWS.filter((r,i) => i<done && r.status==='clean').length;
+      document.getElementById('statExcl').textContent = SAMPLE_ROWS.filter((r,i) => i<done && r.status==='excluded').length;
+
+      if (done >= total) {
+        clearInterval(processingTimer);
+        document.getElementById('processingIcon').style.animation = '';
+        document.getElementById('processingIcon').className = 'bi bi-check-circle-fill';
+        document.getElementById('processingIcon').style.color = 'var(--color-success)';
+        document.getElementById('processingTitle').textContent = '처리가 완료됐습니다.';
+        document.getElementById('processingSubtitle').textContent = '결과 확인 버튼을 클릭해 처리 결과를 확인하세요.';
+        document.getElementById('cancelBtn').style.display = 'none';
+        document.getElementById('processingArea').querySelector('.processing-box').insertAdjacentHTML('beforeend',
+          `<button class="btn-primary btn-lg" style="margin-top:16px;" onclick="goStep(4)">
+            <i class="bi bi-table"></i> 결과 확인
+          </button>`);
+        AdminToast.show('일괄 처리가 완료됐습니다.');
+      }
+    }, 180);
+  }
+
+  function cancelProcessing() {
+    AdminConfirm.show({
+      title: '처리 취소',
+      message: '현재 배치가 완료된 후 처리를 중단합니다. 취소하시겠습니까?',
+      onConfirm: () => {
+        clearInterval(processingTimer);
+        document.getElementById('processingTitle').textContent = '처리가 취소됐습니다.';
+        document.getElementById('processingSubtitle').textContent = '';
+        document.getElementById('cancelBtn').style.display = 'none';
+        document.getElementById('step3Actions').style.display = 'flex';
+        AdminToast.show('처리가 취소됐습니다.', 'warning');
+      }
+    });
+  }
+
+  /* ══════════════════════
+     STEP 4: 결과 확인
+  ══════════════════════ */
+  function renderResults() {
+    const det  = SAMPLE_ROWS.filter(r=>r.status==='detected').length;
+    const cln  = SAMPLE_ROWS.filter(r=>r.status==='clean').length;
+    const excl = SAMPLE_ROWS.filter(r=>r.status==='excluded').length;
+
+    document.getElementById('fAll').textContent      = SAMPLE_ROWS.length;
+    document.getElementById('fDetected').textContent = det;
+    document.getElementById('fClean').textContent    = cln;
+    document.getElementById('fExcl').textContent     = excl;
+
+    document.getElementById('resultStatRow').innerHTML = [
+      { label:'전체 행',   value: SAMPLE_ROWS.length, color: 'var(--color-primary)' },
+      { label:'처리 완료', value: SAMPLE_ROWS.length, color: 'var(--color-success)' },
+      { label:'PII 검출',  value: det,   color: 'var(--color-error)'   },
+      { label:'미검출',    value: cln,   color: 'var(--color-text-sub)' },
+      { label:'제외',      value: excl,  color: 'var(--color-warning)'  },
+    ].map(s => `
+      <div class="result-stat-card">
+        <div class="result-stat-value" style="color:${s.color};">${s.value}</div>
+        <div class="result-stat-label">${s.label}</div>
+      </div>`).join('');
+
+    renderGrid(SAMPLE_ROWS);
+
+    // 필터 탭
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.filter-tab').forEach(t=>t.classList.remove('active'));
+        tab.classList.add('active');
+        currentFilter = tab.dataset.filter;
+        filterGrid();
+      });
+    });
+  }
+
+  function filterGrid() {
+    const q = (document.getElementById('gridSearch')?.value || '').toLowerCase();
+    const rows = currentFilter === 'all' ? SAMPLE_ROWS : SAMPLE_ROWS.filter(r=>r.status===currentFilter);
+    renderGrid(rows.filter(r => r.text.toLowerCase().includes(q) || r.type.toLowerCase().includes(q)));
+  }
+
+  function renderGrid(rows) {
+    document.getElementById('resultBody').innerHTML = rows.map((r, i) => `
+      <tr onclick="selectRow(${SAMPLE_ROWS.indexOf(r)})" id="gridRow${SAMPLE_ROWS.indexOf(r)}" ${selectedRow===SAMPLE_ROWS.indexOf(r)?'class="selected"':''}>
+        <td><input type="checkbox" style="accent-color:var(--color-primary);" onclick="event.stopPropagation()"></td>
+        <td style="color:var(--color-text-sub);">${i+1}</td>
+        <td>${r.type}</td>
+        <td><div class="result-text-cell">${r.text}</div></td>
+        <td style="text-align:center;">
+          <span class="pii-count-badge ${r.pii>0?'has':'none'}">${r.pii}</span>
+        </td>
+        <td>
+          <span class="status-chip ${r.status}">
+            ${r.status==='detected' ? '<i class="bi bi-shield-exclamation"></i> PII 검출'
+            : r.status==='clean'    ? '<i class="bi bi-check-circle"></i> 미검출'
+            : '<i class="bi bi-dash-circle"></i> 제외'}
+          </span>
+        </td>
+      </tr>`).join('');
+  }
+
+  function selectRow(idx) {
+    selectedRow = idx;
+    const r = SAMPLE_ROWS[idx];
+    document.querySelectorAll('#resultBody tr').forEach(tr => tr.classList.remove('selected'));
+    document.getElementById('gridRow' + idx)?.classList.add('selected');
+    document.getElementById('resultLayout').classList.remove('no-detail');
+    document.getElementById('detailPanel').classList.add('open');
+    document.getElementById('detailTitle').textContent = `행 ${idx+1} 상세`;
+
+    const piiItems = r.pii > 0
+      ? Array.from({length: r.pii}, (_, i) => ({type: ['전화번호','이메일','주민번호'][i%3], value: ['010-1234-5678','test@ex.com','901231-1234567'][i%3]}))
+      : [];
+
+    let maskedText = r.text;
+    piiItems.forEach(p => { maskedText = maskedText.replace(p.value, `<span class="pii-highlight">[${p.type}]</span>`); });
+
+    document.getElementById('detailBody').innerHTML = `
+      <div class="detail-section">
+        <div class="detail-section-title">원본 텍스트</div>
+        <div class="detail-text-box">${r.text}</div>
+      </div>
+      <div class="detail-section">
+        <div class="detail-section-title">마스킹 결과</div>
+        <div class="detail-text-box">${maskedText}</div>
+      </div>
+      ${piiItems.length > 0 ? `
+      <div class="detail-section">
+        <div class="detail-section-title">감지된 PII (${piiItems.length}건)</div>
+        ${piiItems.map(p=>`
+          <div class="pii-item-row">
+            <span class="pii-type-chip">${p.type}</span>
+            <span class="pii-value">${p.value}</span>
+          </div>`).join('')}
+      </div>` : `
+      <div class="detail-section">
+        <div style="text-align:center;padding:20px;color:var(--color-text-disabled);">
+          <i class="bi bi-shield-check" style="font-size:28px;display:block;margin-bottom:6px;color:var(--color-success);"></i>
+          PII가 검출되지 않았습니다.
+        </div>
+      </div>`}
+      <div class="detail-section">
+        <div class="detail-section-title">행 정보</div>
+        <div style="font-size:13px;display:flex;flex-direction:column;gap:6px;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-sub);">상담유형</span><span>${r.type}</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-sub);">PII 건수</span><span>${r.pii}건</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:var(--color-text-sub);">처리 상태</span>
+            <span class="status-chip ${r.status}" style="font-size:12px;">
+              ${r.status==='detected'?'PII 검출':r.status==='clean'?'미검출':'제외'}
+            </span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function closeDetail() {
+    selectedRow = null;
+    document.getElementById('detailPanel').classList.remove('open');
+    document.getElementById('resultLayout').classList.add('no-detail');
+    document.querySelectorAll('#resultBody tr').forEach(tr=>tr.classList.remove('selected'));
+  }
+
+  function toggleAllCheck(v) {
+    document.querySelectorAll('#resultBody input[type=checkbox]').forEach(el=>el.checked=v);
+  }
+
+  function downloadCSV(type) {
+    AdminToast.show(`${type === 'masked' ? '마스킹' : type === 'clean' ? '미검출' : '제외'} CSV 다운로드를 시작합니다.`);
+  }
+
+  function resetAll() {
+    AdminConfirm.show({
+      title: '새 작업 시작',
+      message: '현재 결과를 초기화하고 새 작업을 시작하시겠습니까?',
+      onConfirm: () => {
+        uploadedFile = null;
+        document.getElementById('fileInput').value = '';
+        document.getElementById('fileInfoBar').style.display = 'none';
+        document.getElementById('uploadZone').classList.remove('has-file');
+        document.getElementById('uploadZone').querySelector('.upload-zone-icon').innerHTML = '<i class="bi bi-cloud-upload"></i>';
+        document.getElementById('uploadZone').querySelector('.upload-zone-text').textContent = '클릭하거나 파일을 여기에 끌어다 놓으세요';
+        document.getElementById('step1NextBtn').disabled = true;
+        document.getElementById('processingArea').style.display = 'none';
+        document.getElementById('step3Actions').style.display = 'flex';
+        goStep(1);
+      }
+    });
+  }
+
+  </script>
+</body>
+</html>

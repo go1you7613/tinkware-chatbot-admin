@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PII 패턴 정보 관리 — 팅크웨어 챗봇 관리자</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+
+  <style>
+    body { background: var(--color-bg-page); }
+
+    /* .tab-count → admin.css 공통 정의 사용 */
+
+    /* ── 탭 콘텐츠 영역 ── */
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    .tab-content-card {
+      background: white;
+      border-radius: 0 0 var(--radius-card) var(--radius-card);
+      border: 1px solid var(--color-border-light);
+      border-top: none;
+    }
+
+    /* ── 툴바 ── */
+    .tab-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--color-border-light);
+    }
+    .tab-toolbar-info {
+      font-size: 13px;
+      color: var(--color-text-sub);
+    }
+
+    /* ── 패턴 목록 ── */
+    .pattern-list { padding: 0 20px; }
+    .pattern-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--color-border-light);
+    }
+    .pattern-item:last-child { border-bottom: none; }
+
+    .pattern-info { flex: 1; min-width: 0; }
+    .pattern-name { font-size: 14px; font-weight: 500; color: var(--color-text-main); margin-bottom: 3px; }
+    .pattern-regex {
+      font-family: 'Courier New', Consolas, monospace;
+      font-size: 12px;
+      color: var(--color-text-sub);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 600px;
+    }
+    .pattern-context {
+      font-size: 12px;
+      color: var(--color-text-disabled);
+      margin-top: 2px;
+    }
+
+    .pattern-actions {
+      display: flex;
+      gap: 4px;
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+    .pattern-btn {
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      border: none; background: none; cursor: pointer;
+      border-radius: var(--radius-base);
+      font-size: 14px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .pattern-btn.edit  { color: var(--color-text-sub); }
+    .pattern-btn.edit:hover  { background: var(--color-primary-light); color: var(--color-primary); }
+    .pattern-btn.del   { color: var(--color-text-sub); }
+    .pattern-btn.del:hover   { background: rgba(255,77,79,0.1); color: var(--color-error); }
+
+    /* 시스템 제공 표시 */
+    .builtin-label {
+      font-size: 11px;
+      padding: 1px 8px;
+      border-radius: 10px;
+      background: var(--color-border-light);
+      color: var(--color-text-disabled);
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+
+    /* ── 추가 폼 ── */
+    .add-form {
+      display: none;
+      background: #FAFAFA;
+      border-bottom: 1px solid var(--color-border-light);
+      padding: 16px 20px;
+    }
+    .add-form.show { display: block; }
+    .add-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 2fr 1fr;
+      gap: 12px;
+      align-items: end;
+    }
+    .add-form-field label {
+      display: block;
+      font-size: 12px;
+      color: var(--color-text-sub);
+      margin-bottom: 4px;
+    }
+    .add-form-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body data-admin-menu="data-management" data-admin-submenu="PII 패턴 정보 관리" data-admin-page="pii-management">
+
+  <div id="adminHeader"></div>
+  <div id="adminSidebar"></div>
+
+  <div class="main-wrap" id="mainWrap">
+    <div class="page-content">
+
+      <!-- 페이지 헤더 -->
+      <div class="page-header">
+        <div class="page-title">PII 패턴 정보 관리</div>
+        <div class="breadcrumb-row">
+          <span>홈</span>
+          <span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span>데이터 관리</span>
+          <span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span style="color:var(--color-text-main);">PII 패턴 정보 관리</span>
+        </div>
+      </div>
+
+      <!-- 탭: 내장 PII 패턴 | 커스텀 패턴 (admin-tabs 디자인시스템 공통 클래스 사용) -->
+      <div class="admin-tabs" id="piiTabs">
+        <div class="admin-tab active" data-tab="builtin">
+          내장 PII 패턴 <span class="tab-count" id="builtinBadge">8</span>
+        </div>
+        <div class="admin-tab" data-tab="custom">
+          커스텀 패턴 <span class="tab-count" id="customBadge">9</span>
+        </div>
+      </div>
+
+      <!-- ══ 내장 PII 패턴 탭 ══ -->
+      <div class="tab-pane active tab-content-card" id="pane-builtin">
+        <div class="tab-toolbar">
+          <span class="tab-toolbar-info">
+            <i class="bi bi-info-circle" style="margin-right:4px;"></i>
+            시스템 제공 패턴은 활성/비활성만 제어 가능합니다. 수정·삭제는 지원하지 않습니다.
+          </span>
+        </div>
+        <div class="pattern-list" id="builtinList"></div>
+      </div>
+
+      <!-- ══ 커스텀 패턴 탭 ══ -->
+      <div class="tab-pane tab-content-card" id="pane-custom">
+        <div class="tab-toolbar">
+          <span class="tab-toolbar-info">
+            등록된 커스텀 패턴 <strong id="customCount">9</strong>개
+          </span>
+          <button class="btn-primary btn-sm" id="addPatternBtn">
+            <i class="bi bi-plus-lg"></i> 패턴 추가
+          </button>
+        </div>
+
+        <!-- 추가 폼 -->
+        <div class="add-form" id="addForm">
+          <div class="add-form-grid">
+            <div class="add-form-field">
+              <label>패턴 이름 <span style="color:var(--color-error);">*</span></label>
+              <input type="text" class="form-input" id="formName" placeholder="패턴 이름">
+            </div>
+            <div class="add-form-field">
+              <label>정규식 (Regex) <span style="color:var(--color-error);">*</span></label>
+              <input type="text" class="form-input" id="formRegex"
+                placeholder="(?:패턴|예시)s*[:]..." style="font-family:monospace;font-size:13px;">
+            </div>
+            <div class="add-form-field">
+              <label>문맥 단어 <span style="color:var(--color-text-disabled);font-weight:400;">(쉼표 구분, 선택)</span></label>
+              <input type="text" class="form-input" id="formContext" placeholder="비밀번호,비번">
+            </div>
+          </div>
+          <div class="add-form-actions">
+            <button class="btn-primary btn-sm" id="formSaveBtn">저장</button>
+            <button class="btn-default btn-sm" id="formCancelBtn">취소</button>
+          </div>
+        </div>
+
+        <div class="pattern-list" id="customList"></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 수정 모달 -->
+  <div class="modal-overlay" id="modalEdit">
+    <div class="modal-box" style="width:480px;">
+      <div class="modal-header">
+        <span>커스텀 패턴 수정</span>
+        <button class="modal-close" data-modal-close="modalEdit">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="margin-bottom:12px;">
+          <label style="font-size:13px;color:var(--color-text-sub);display:block;margin-bottom:4px;">
+            패턴 이름 <span style="color:var(--color-error);">*</span>
+          </label>
+          <input type="text" class="form-input" id="editName">
+        </div>
+        <div style="margin-bottom:12px;">
+          <label style="font-size:13px;color:var(--color-text-sub);display:block;margin-bottom:4px;">
+            정규식 (Regex) <span style="color:var(--color-error);">*</span>
+          </label>
+          <input type="text" class="form-input" id="editRegex" style="font-family:monospace;font-size:13px;">
+        </div>
+        <div>
+          <label style="font-size:13px;color:var(--color-text-sub);display:block;margin-bottom:4px;">
+            문맥 단어 (쉼표 구분, 선택)
+          </label>
+          <input type="text" class="form-input" id="editContext">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-default btn-sm" data-modal-close="modalEdit">취소</button>
+        <button class="btn-primary btn-sm" id="editSaveBtn">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+  /* ── 데이터 ── */
+  const builtinPatterns = [
+    { id:'b1', name:'전화번호',     desc:'한국 전화번호 (010-XXXX-XXXX 등)',            enabled: true  },
+    { id:'b2', name:'이메일',       desc:'이메일 주소',                                  enabled: true  },
+    { id:'b3', name:'주민등록번호', desc:'한국 주민등록번호 (XXXXXX-XXXXXXX)',           enabled: true  },
+    { id:'b4', name:'생년월일',     desc:'생년월일 패턴',                                enabled: false },
+    { id:'b5', name:'계좌번호',     desc:'한국 은행 계좌번호',                           enabled: true  },
+    { id:'b6', name:'카드번호',     desc:'신용/체크카드 번호',                           enabled: true  },
+    { id:'b7', name:'IP 주소',      desc:'IPv4/IPv6 주소',                               enabled: true  },
+    { id:'b8', name:'URL',          desc:'웹 URL',                                       enabled: false },
+  ];
+
+  let customPatterns = [
+    { id:'c1', name:'지역센터_마스킹',  regex:'(서울|부산|대구|인천)s*(센터|지점|지사)',               context:'센터,지점',  enabled: true  },
+    { id:'c2', name:'비밀번호',          regex:'(?:비밀번호|비번|PW|password)s*[:s]?s*S{4,20}',       context:'비밀번호,비번', enabled: true  },
+    { id:'c3', name:'주소 패턴',         regex:'(?<=주소:)(.+?)(?=s+|$)',                              context:'주소',       enabled: true  },
+    { id:'c4', name:'고객명 추출',       regex:'(?<=고객명:)[가-힣]{2,4}[a-zA-Z]*',                    context:'고객명',     enabled: true  },
+    { id:'c5', name:'주문번호 추출',     regex:'(?<=주문번호:)[A-Z0-9-]+',                             context:'주문번호',   enabled: false },
+    { id:'c6', name:'제품키',            regex:'(?<=제품키:)[A-Z0-9-]+',                               context:'제품키',     enabled: true  },
+    { id:'c7', name:'아이디',            regex:'(?<=아이디:)[^ ]+',                                    context:'아이디',     enabled: true  },
+    { id:'c8', name:'예금주',            regex:'(?<=예금주:)[가-힣]{2,4}',                             context:'예금주',     enabled: true  },
+    { id:'c9', name:'카카오 ID',         regex:'(?<=카카오:)[a-zA-Z0-9_.]+',                           context:'카카오',     enabled: false },
+  ];
+
+  let editingId = null;
+
+  /* ── 렌더링 ── */
+  function renderBuiltin() {
+    document.getElementById('builtinBadge').textContent = builtinPatterns.length;
+    document.getElementById('builtinList').innerHTML = builtinPatterns.map(p => `
+      <div class="pattern-item">
+        <label class="toggle-switch" title="${p.enabled ? '비활성화' : '활성화'}">
+          <input type="checkbox" ${p.enabled ? 'checked' : ''} onchange="toggleBuiltin('${p.id}', this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+        <div class="pattern-info">
+          <div class="pattern-name">${p.name}</div>
+          <div class="pattern-regex">${p.desc}</div>
+        </div>
+        <span class="builtin-label">시스템 제공</span>
+      </div>`).join('');
+  }
+
+  function renderCustom() {
+    const count = customPatterns.length;
+    document.getElementById('customBadge').textContent = count;
+    document.getElementById('customCount').textContent = count;
+    document.getElementById('customList').innerHTML = customPatterns.map(p => `
+      <div class="pattern-item" id="pi-${p.id}">
+        <label class="toggle-switch" title="${p.enabled ? '비활성화' : '활성화'}">
+          <input type="checkbox" ${p.enabled ? 'checked' : ''} onchange="toggleCustom('${p.id}', this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+        <div class="pattern-info">
+          <div class="pattern-name">${p.name}</div>
+          <div class="pattern-regex">${p.regex}</div>
+          ${p.context ? `<div class="pattern-context">문맥: ${p.context}</div>` : ''}
+        </div>
+        <div class="pattern-actions">
+          <button class="pattern-btn edit" onclick="openEditModal('${p.id}')" title="수정">
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button class="pattern-btn del" onclick="deletePattern('${p.id}')" title="삭제">
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </div>`).join('');
+  }
+
+  /* ── 탭 전환 (admin-tab 공통 클래스) ── */
+  document.querySelectorAll('#piiTabs .admin-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#piiTabs .admin-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('pane-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  /* ── 토글 ── */
+  function toggleBuiltin(id, checked) {
+    const p = builtinPatterns.find(x => x.id === id);
+    if (p) { p.enabled = checked; AdminToast.show(`${p.name}: ${checked ? '활성화' : '비활성화'}됐습니다.`); }
+  }
+  function toggleCustom(id, checked) {
+    const p = customPatterns.find(x => x.id === id);
+    if (p) { p.enabled = checked; AdminToast.show(`${p.name}: ${checked ? '활성화' : '비활성화'}됐습니다.`); }
+  }
+
+  /* ── 추가 폼 ── */
+  document.getElementById('addPatternBtn').addEventListener('click', () => {
+    editingId = null;
+    ['formName','formRegex','formContext'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('addForm').classList.add('show');
+    document.getElementById('formName').focus();
+  });
+
+  document.getElementById('formCancelBtn').addEventListener('click', () => {
+    document.getElementById('addForm').classList.remove('show');
+  });
+
+  document.getElementById('formSaveBtn').addEventListener('click', () => {
+    const name  = document.getElementById('formName').value.trim();
+    const regex = document.getElementById('formRegex').value.trim();
+    const ctx   = document.getElementById('formContext').value.trim();
+    if (!name || !regex) { AdminToast.show('패턴 이름과 정규식은 필수입니다.', 'error'); return; }
+    customPatterns.unshift({ id: 'c' + Date.now(), name, regex, context: ctx, enabled: true });
+    renderCustom();
+    document.getElementById('addForm').classList.remove('show');
+    AdminToast.show('패턴이 추가됐습니다.');
+  });
+
+  /* ── 수정 모달 ── */
+  function openEditModal(id) {
+    const p = customPatterns.find(x => x.id === id);
+    if (!p) return;
+    editingId = id;
+    document.getElementById('editName').value    = p.name;
+    document.getElementById('editRegex').value   = p.regex;
+    document.getElementById('editContext').value = p.context || '';
+    AdminModal.open('modalEdit');
+  }
+
+  document.getElementById('editSaveBtn').addEventListener('click', () => {
+    const name  = document.getElementById('editName').value.trim();
+    const regex = document.getElementById('editRegex').value.trim();
+    const ctx   = document.getElementById('editContext').value.trim();
+    if (!name || !regex) { AdminToast.show('패턴 이름과 정규식은 필수입니다.', 'error'); return; }
+    const p = customPatterns.find(x => x.id === editingId);
+    if (p) { p.name = name; p.regex = regex; p.context = ctx; }
+    renderCustom();
+    AdminModal.close('modalEdit');
+    AdminToast.show('패턴이 수정됐습니다.');
+    editingId = null;
+  });
+
+  /* ── 삭제 ── */
+  function deletePattern(id) {
+    const p = customPatterns.find(x => x.id === id);
+    if (!p) return;
+    AdminConfirm.show({
+      title: '패턴 삭제',
+      message: `"${p.name}" 패턴을 삭제하시겠습니까? 삭제 후에는 해당 패턴으로 마스킹이 되지 않습니다.`,
+      onConfirm: () => {
+        customPatterns = customPatterns.filter(x => x.id !== id);
+        renderCustom();
+        AdminToast.show(`"${p.name}" 패턴이 삭제됐습니다.`);
+      }
+    });
+  }
+
+  /* ── 초기 렌더링 ── */
+  renderBuiltin();
+  renderCustom();
+  </script>
+</body>
+</html>

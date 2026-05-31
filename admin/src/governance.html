@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQ 거버넌스 관리 — 팅크웨어 챗봇 관리자</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+
+  <style>
+    body { background: var(--color-bg-page); }
+
+    /* ── 파이프라인 탭 (7개, 순서 표시) ── */
+    .pipe-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--color-border-light);
+      background: white;
+      padding: 0 12px;
+      overflow: hidden;
+    }
+    .pipe-tab {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 13px 8px;
+      font-size: 12px;
+      color: var(--color-text-sub);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: color 0.2s, border-color 0.2s;
+      white-space: nowrap;
+      user-select: none;
+      flex: 1 1 0;
+      min-width: 0;
+    }
+    .pipe-tab:not(.active) { overflow: hidden; text-overflow: ellipsis; }
+    .pipe-tab:hover { color: var(--color-text-main); }
+    .pipe-tab.active { color: var(--color-primary); border-bottom-color: var(--color-primary); font-weight: 500; }
+    .pipe-step-num {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--color-border);
+      color: var(--color-text-sub);
+      font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .pipe-tab.active .pipe-step-num { background: var(--color-primary); color: white; }
+    .pipe-tab.done .pipe-step-num { background: var(--color-success); color: white; }
+
+    /* ── 공통 ── */
+    .tab-pane { display: none; }
+    .tab-pane.active {
+      display: block;
+      margin-top: 15px;
+    }
+
+    /* ── PDF 문서 탭 ── */
+    .upload-row {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+      padding: 12px 16px; background: #FAFAFA; border: 1px solid var(--color-border-light); border-radius: var(--radius-card);
+    }
+    .job-status-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 500;
+    }
+    .job-status-badge.done    { background: rgba(82,196,26,0.12); color: var(--color-success); }
+    .job-status-badge.running { background: rgba(24,144,255,0.12); color: var(--color-primary); }
+    .job-status-badge.error   { background: rgba(255,77,79,0.12);  color: var(--color-error); }
+    .job-status-badge.wait    { background: rgba(0,0,0,0.06);       color: var(--color-text-sub); }
+
+    /* ── Scorecard 탭 ── */
+    .scorecard-table th, .scorecard-table td {
+      padding: 10px 14px; border-bottom: 1px solid var(--color-border-light); font-size: 13px;
+    }
+    .scorecard-table th { background: #FAFAFA; font-weight: 500; color: var(--color-text-sub); }
+    .scorecard-table { width: 100%; border-collapse: collapse; }
+    .best-parser { background: rgba(82,196,26,0.08); }
+    .score-bar-cell { min-width: 120px; }
+    .score-bar { height: 6px; border-radius: 3px; background: var(--color-primary); }
+    .parser-select-btn {
+      padding: 3px 12px; font-size: 12px; border-radius: var(--radius-base);
+      border: 1px solid var(--color-border); background: white; cursor: pointer;
+      transition: all 0.15s; color: var(--color-text-main);
+    }
+    .parser-select-btn.selected { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-light); font-weight: 500; }
+
+    /* ── PDF 검수 탭: 좌우 분할 ── */
+    .review-split {
+      display: grid; grid-template-columns: 300px 1fr; gap: 0;
+      border: 1px solid var(--color-border-light); border-radius: var(--radius-card);
+      overflow: hidden; background: white; min-height: 500px;
+    }
+    .review-job-list { border-right: 1px solid var(--color-border-light); }
+    .review-job-item {
+      padding: 12px 16px; cursor: pointer;
+      border-bottom: 1px solid var(--color-border-light);
+      transition: background 0.15s;
+    }
+    .review-job-item:hover { background: #FAFAFA; }
+    .review-job-item.active { background: var(--color-primary-light); border-left: 3px solid var(--color-primary); }
+    .review-job-name { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+    .review-job-meta { font-size: 11px; color: var(--color-text-sub); }
+
+    .review-section { padding: 16px; }
+    .review-section-title { font-size: 12px; font-weight: 500; color: var(--color-text-sub); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--color-border-light); }
+    .review-item-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 0; border-bottom: 1px solid var(--color-border-light); font-size: 13px;
+    }
+    .review-item-row:last-child { border-bottom: none; }
+    .review-item-text { flex: 1; color: var(--color-text-main); line-height: 1.5; }
+    .review-item-status {
+      font-size: 11px; padding: 1px 8px; border-radius: 9px; flex-shrink: 0;
+    }
+    .review-item-status.ok      { background: rgba(82,196,26,0.12); color: var(--color-success); }
+    .review-item-status.edit    { background: rgba(24,144,255,0.12); color: var(--color-primary); }
+    .review-item-status.low     { background: rgba(250,173,20,0.12); color: var(--color-warning); }
+    .review-item-status.exclude { background: rgba(0,0,0,0.06);       color: var(--color-text-sub); }
+
+    /* ── 전처리 탭 ── */
+    .preproc-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .compare-box {
+      padding: 12px; background: #FAFAFA; border: 1px solid var(--color-border-light);
+      border-radius: var(--radius-base); font-size: 13px; line-height: 1.7; min-height: 100px;
+    }
+    .compare-label { font-size: 11px; font-weight: 500; color: var(--color-text-sub); text-transform: uppercase; margin-bottom: 6px; }
+    .text-diff-remove { background: rgba(255,77,79,0.15); text-decoration: line-through; color: var(--color-error); }
+    .text-diff-add { background: rgba(82,196,26,0.15); color: var(--color-success); }
+
+    /* ── 임베딩 탭 ── */
+    .embed-layout { display: grid; grid-template-columns: 1fr 320px; gap: 16px; }
+    .field-map-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 8px 0; border-bottom: 1px solid var(--color-border-light); font-size: 13px;
+    }
+    .field-map-row:last-child { border-bottom: none; }
+    .field-role-badge {
+      font-size: 11px; padding: 1px 8px; border-radius: 9px; flex-shrink: 0; font-weight: 500;
+    }
+    .field-role-badge.vector { background: rgba(24,144,255,0.12); color: var(--color-primary); }
+    .field-role-badge.meta   { background: rgba(82,196,26,0.12);  color: var(--color-success); }
+    .field-role-badge.ignore { background: rgba(0,0,0,0.06);       color: var(--color-text-disabled); }
+
+    /* ── RAG 컬렉션 탭 ── */
+    .rag-result-card {
+      border: 1px solid var(--color-border-light); border-radius: var(--radius-base);
+      padding: 14px 16px; margin-bottom: 8px; background: white;
+    }
+    .rag-result-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .rag-score-badge {
+      font-size: 11px; font-weight: 600; padding: 1px 8px; border-radius: 9px;
+    }
+    .rag-score-badge.r { background: rgba(24,144,255,0.12); color: var(--color-primary); }
+    .rag-score-badge.h { background: rgba(82,196,26,0.12);  color: var(--color-success); }
+    .rag-result-text { font-size: 13px; line-height: 1.6; color: var(--color-text-main); }
+    .rag-meta { display: flex; gap: 12px; margin-top: 6px; font-size: 11px; color: var(--color-text-sub); }
+    .rag-collection-layout {
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 16px;
+      align-items: start;
+    }
+
+    /* 임베딩 진행 */
+    .embed-running {
+      display: none; padding: 16px;
+      background: rgba(24,144,255,0.04);
+      border: 1px solid rgba(24,144,255,0.2);
+      border-radius: var(--radius-card);
+    }
+    .embed-running.show { display: block; }
+  </style>
+</head>
+<body data-admin-menu="governance" data-admin-submenu="FAQ 거버넌스 관리" data-admin-page="governance">
+
+  <div id="adminHeader"></div>
+  <div id="adminSidebar"></div>
+
+  <div class="main-wrap" id="mainWrap">
+    <div class="page-content">
+
+      <div class="page-header">
+        <div class="page-title">FAQ 거버넌스 관리</div>
+        <div class="breadcrumb-row">
+          <span>홈</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span>데이터 거버넌스</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span style="color:var(--color-text-main);">FAQ 거버넌스 관리</span>
+        </div>
+      </div>
+
+      <!-- 파이프라인 탭 (업무흐름 순) -->
+      <div class="pipe-tabs" id="pipeTabs">
+        <div class="pipe-tab active" data-tab="pdf-doc">
+          <span class="pipe-step-num">1</span> PDF 문서
+        </div>
+        <div class="pipe-tab" data-tab="pdf-parse">
+          <span class="pipe-step-num">2</span> PDF 파싱
+        </div>
+        <div class="pipe-tab" data-tab="pdf-review">
+          <span class="pipe-step-num">3</span> PDF 검수
+        </div>
+        <div class="pipe-tab" data-tab="regex-preproc">
+          <span class="pipe-step-num">4</span> 정규식 전처리
+        </div>
+        <div class="pipe-tab" data-tab="llm-preproc">
+          <span class="pipe-step-num">5</span> LLM 전처리
+        </div>
+        <div class="pipe-tab" data-tab="embedding">
+          <span class="pipe-step-num">6</span> PDF 임베딩/컬렉션
+        </div>
+        <div class="pipe-tab done" data-tab="rag">
+          <span class="pipe-step-num">7</span> RAG 시스템 컬렉션
+        </div>
+      </div>
+
+      <!-- ══ TAB 1: PDF 문서 ══ -->
+      <div class="tab-pane active" id="pane-pdf-doc">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <span>PDF 문서 업로드</span>
+            <span style="font-size:12px;color:var(--color-text-sub);">PDF 파일 1개씩 업로드</span>
+          </div>
+          <div class="admin-card-body">
+            <div class="upload-row">
+              <button class="btn-default btn-sm" onclick="document.getElementById('pdfInput').click()">
+                <i class="bi bi-folder2-open"></i> 파일 선택
+              </button>
+              <input type="file" id="pdfInput" accept=".pdf" style="display:none;" onchange="selectPdf(this)">
+              <span id="pdfFileName" style="font-size:13px;color:var(--color-text-sub);flex:1;">파일을 선택하세요 (.pdf)</span>
+              <select class="form-select" style="height:34px;width:120px;">
+                <option>섹션 단위</option>
+                <option>페이지 단위</option>
+              </select>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+                <input type="checkbox" style="accent-color:var(--color-primary);"> 자동 전처리
+              </label>
+              <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+                <input type="checkbox" style="accent-color:var(--color-primary);"> 자동 임베딩
+              </label>
+              <button class="btn-primary btn-sm" onclick="uploadPdf()">
+                <i class="bi bi-upload"></i> 업로드
+              </button>
+            </div>
+            <table class="admin-table" id="pdfJobTable">
+              <thead>
+                <tr>
+                  <th>파일명</th>
+                  <th>업로드일시</th>
+                  <th style="width:90px;">파싱 상태</th>
+                  <th style="width:90px;">검수 상태</th>
+                  <th style="width:90px;">임베딩</th>
+                  <th style="width:100px;">액션</th>
+                </tr>
+              </thead>
+              <tbody id="pdfJobBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TAB 2: PDF 파싱 ══ -->
+      <div class="tab-pane" id="pane-pdf-parse">
+        <div class="admin-card" style="margin-bottom:12px;">
+          <div class="admin-card-header">
+            <span>파서 비교 결과 (Scorecard)</span>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <select class="form-select" style="height:34px;width:200px;">
+                <option>AS_매뉴얼_v2.pdf</option>
+                <option>제품설명서_v3.pdf</option>
+              </select>
+              <span style="font-size:12px;background:rgba(82,196,26,0.12);color:var(--color-success);padding:3px 10px;border-radius:10px;font-weight:500;">
+                <i class="bi bi-star-fill"></i> pdfminer 최적 선택됨
+              </span>
+            </div>
+          </div>
+          <div class="admin-card-body">
+            <table class="scorecard-table">
+              <thead>
+                <tr>
+                  <th>파서</th>
+                  <th>텍스트 품질</th>
+                  <th>구조 보존</th>
+                  <th>처리 속도</th>
+                  <th class="score-bar-cell">종합 점수</th>
+                  <th style="width:90px;">상태</th>
+                  <th style="width:80px;"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr class="best-parser">
+                  <td><strong>pdfminer</strong> <span style="font-size:11px;background:rgba(82,196,26,0.15);color:var(--color-success);padding:1px 6px;border-radius:9px;margin-left:4px;">BEST</span></td>
+                  <td>87점</td><td>92점</td><td>78점</td>
+                  <td><div class="score-bar" style="width:87%;background:var(--color-success);"></div><span style="font-size:12px;font-weight:600;color:var(--color-success);">87점</span></td>
+                  <td><span class="job-status-badge done">최적 선택</span></td>
+                  <td><button class="parser-select-btn selected">선택됨</button></td>
+                </tr>
+                <tr>
+                  <td>pymupdf</td>
+                  <td>82점</td><td>76점</td><td>94점</td>
+                  <td><div class="score-bar" style="width:82%;"></div><span style="font-size:12px;font-weight:600;color:var(--color-primary);">82점</span></td>
+                  <td><span class="job-status-badge wait">대기</span></td>
+                  <td><button class="parser-select-btn" onclick="changeParser(this)">선택</button></td>
+                </tr>
+                <tr>
+                  <td>pdfplumber</td>
+                  <td>74점</td><td>88점</td><td>61점</td>
+                  <td><div class="score-bar" style="width:74%;background:var(--color-warning);"></div><span style="font-size:12px;font-weight:600;color:var(--color-warning);">74점</span></td>
+                  <td><span class="job-status-badge wait">대기</span></td>
+                  <td><button class="parser-select-btn" onclick="changeParser(this)">선택</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 단계별 비교 분석 -->
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <span>텍스트 처리 단계별 비교 분석</span>
+            <select class="form-select" style="height:34px;width:160px;">
+              <option>pdfminer (최적)</option>
+              <option>pymupdf</option>
+              <option>pdfplumber</option>
+            </select>
+          </div>
+          <div class="admin-card-body">
+            <div class="preproc-layout">
+              <div>
+                <div class="compare-label">원본 추출 텍스트</div>
+                <div class="compare-box">블랙박스 AS 안내\n\n제품의 이상 발생 시 아래 절차를 따라 AS를 접수하시기\n바랍니다. 제품 구매일로부터 1년 이내의 경우 무상 수리가\n가능합니다.</div>
+              </div>
+              <div>
+                <div class="compare-label">정규식 전처리 후</div>
+                <div class="compare-box">블랙박스 AS 안내 <span class="text-diff-remove">\n\n</span><span class="text-diff-add"> </span>제품의 이상 발생 시 아래 절차를 따라 AS를 접수하시기 바랍니다. 제품 구매일로부터 1년 이내의 경우 무상 수리가 가능합니다.</div>
+              </div>
+            </div>
+            <div style="margin-top:12px;padding:10px 14px;background:#FFF7E6;border-radius:var(--radius-base);font-size:12px;color:#AD6800;">
+              <i class="bi bi-exclamation-triangle" style="margin-right:6px;"></i>
+              <strong>문제 섹션 감지:</strong> 섹션 3, 7, 12에서 텍스트 손실 10% 이상 감지됨
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TAB 3: PDF 검수 ══ -->
+      <div class="tab-pane" id="pane-pdf-review">
+        <div class="review-split">
+          <!-- 검수 Job 목록 -->
+          <div class="review-job-list">
+            <div style="padding:12px 16px;border-bottom:1px solid var(--color-border-light);display:flex;align-items:center;justify-content:space-between;">
+              <span style="font-size:13px;font-weight:500;">검수 Job 목록</span>
+              <span style="font-size:12px;color:var(--color-text-sub);">2개</span>
+            </div>
+            <div class="review-job-item active" onclick="selectReviewJob(this,'AS_매뉴얼_v2')">
+              <div class="review-job-name">AS_매뉴얼_v2.pdf</div>
+              <div class="review-job-meta">84섹션 · 검수중 <span style="color:var(--color-primary);">32/84</span></div>
+            </div>
+            <div class="review-job-item" onclick="selectReviewJob(this,'제품설명서_v3')">
+              <div class="review-job-name">제품설명서_v3.pdf</div>
+              <div class="review-job-meta">127섹션 · 대기중</div>
+            </div>
+          </div>
+
+          <!-- 검수 항목 영역 -->
+          <div id="reviewItemArea">
+            <div class="review-section">
+              <div class="review-section-title">AS_매뉴얼_v2.pdf — 검수 항목</div>
+              <div style="display:flex;gap:8px;margin-bottom:12px;">
+                <button class="btn-default btn-sm" onclick="bulkPreproc('regex')"><i class="bi bi-code"></i> 정규식 일괄 전처리</button>
+                <button class="btn-default btn-sm" onclick="bulkPreproc('llm')"><i class="bi bi-stars"></i> AI 일괄 전처리</button>
+                <select class="form-select btn-sm" style="height:32px;width:120px;font-size:13px;">
+                  <option>전체</option><option>검수대기</option><option>수정완료</option><option>저가치</option>
+                </select>
+              </div>
+              <div id="reviewItems"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TAB 4: 정규식 전처리 ══ -->
+      <div class="tab-pane" id="pane-regex-preproc">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <!-- 단건 실행 -->
+          <div class="admin-card">
+            <div class="admin-card-header">단건 실행</div>
+            <div class="admin-card-body">
+              <div style="margin-bottom:10px;">
+                <div class="compare-label">원본 텍스트</div>
+                <textarea class="form-input" id="regexInput" style="height:120px;resize:vertical;font-size:13px;line-height:1.6;" placeholder="전처리할 텍스트를 입력하세요...">블랙박스  AS  안내\n\n\n제품의 이상 발생 시   아래 절차를 따라\nAS를 접수하시기 바랍니다.</textarea>
+              </div>
+              <button class="btn-primary btn-sm" onclick="runRegex()" style="margin-bottom:12px;">
+                <i class="bi bi-play-fill"></i> 정규식 전처리 실행
+              </button>
+              <div id="regexResult" style="display:none;">
+                <div class="compare-label">전처리 결과</div>
+                <div class="compare-box" id="regexOutput"></div>
+                <div style="margin-top:10px;display:flex;gap:8px;">
+                  <button class="btn-primary btn-sm" onclick="AdminToast.show('전처리 결과가 적용됐습니다.')">적용</button>
+                  <button class="btn-default btn-sm" onclick="document.getElementById('regexResult').style.display='none'">취소</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 일괄 적용 -->
+          <div class="admin-card">
+            <div class="admin-card-header">일괄 적용</div>
+            <div class="admin-card-body">
+              <div style="font-size:13px;color:var(--color-text-sub);margin-bottom:16px;">
+                현재 Job의 전체 검수 항목에 정규식 전처리를 일괄 적용합니다.
+              </div>
+              <div style="padding:14px;background:#FAFAFA;border-radius:var(--radius-card);margin-bottom:16px;font-size:13px;">
+                <div style="font-weight:500;margin-bottom:6px;">적용 규칙 미리보기</div>
+                <div style="color:var(--color-text-sub);font-family:monospace;font-size:12px;">
+                  · 연속 공백 → 단일 공백<br>
+                  · 불필요 개행 제거<br>
+                  · 특수문자 정규화<br>
+                  · 반복 문구 제거
+                </div>
+              </div>
+              <button class="btn-primary" onclick="batchRegex()" style="width:100%;">
+                <i class="bi bi-play-fill"></i> 일괄 전처리 시작
+              </button>
+              <div class="embed-running" id="regexBatchProgress">
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;">
+                  <span id="regexBatchStatus">처리 중...</span>
+                  <span id="regexBatchPct">0%</span>
+                </div>
+                <div class="progress-bar-wrap" style="height:8px;">
+                  <div class="progress-bar-fill" id="regexBatchBar" style="width:0%;"></div>
+                </div>
+                <div style="font-size:12px;color:var(--color-text-sub);margin-top:6px;" id="regexBatchStats"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TAB 5: LLM 전처리 ══ -->
+      <div class="tab-pane" id="pane-llm-preproc">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="admin-card">
+            <div class="admin-card-header">LLM 단건 전처리</div>
+            <div class="admin-card-body">
+              <div style="margin-bottom:10px;">
+                <div class="compare-label">원본 텍스트</div>
+                <textarea class="form-input" id="llmInput" style="height:100px;resize:vertical;font-size:13px;line-height:1.6;" placeholder="LLM 전처리할 텍스트를 입력하세요...">블랙박스 as 안내 제품 이상시 아래절차 따라 AS접수 제품구매일 1년이내 무상수리 가능</textarea>
+              </div>
+              <button class="btn-primary btn-sm" onclick="runLlm()" style="margin-bottom:12px;">
+                <i class="bi bi-stars"></i> AI 전처리 실행
+              </button>
+              <div id="llmResult" style="display:none;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+                  <div>
+                    <div class="compare-label">AI 전처리 결과</div>
+                    <div class="compare-box" id="llmOutput"></div>
+                  </div>
+                  <div>
+                    <div class="compare-label">예상 사용자 질문</div>
+                    <div class="compare-box" id="llmQuestions"></div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <button class="btn-primary btn-sm" onclick="AdminToast.show('AI 전처리 결과가 적용됐습니다.')">적용</button>
+                  <button class="btn-default btn-sm" onclick="runLlm()"><i class="bi bi-arrow-clockwise"></i> 재생성</button>
+                  <button class="btn-default btn-sm" onclick="document.getElementById('llmResult').style.display='none'">취소</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-card">
+            <div class="admin-card-header">AI 일괄 전처리</div>
+            <div class="admin-card-body">
+              <div style="font-size:13px;color:var(--color-text-sub);margin-bottom:16px;">
+                현재 Job의 검수 완료 항목에 LLM 전처리를 일괄 적용합니다.<br>
+                처리 중 취소 시 현재 항목 완료 후 안전하게 중단됩니다.
+              </div>
+              <div style="padding:14px;background:#FAFAFA;border-radius:var(--radius-card);margin-bottom:16px;">
+                <div style="display:flex;justify-content:space-between;font-size:13px;">
+                  <span>처리 대상</span><strong>54건</strong>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-top:4px;">
+                  <span>사용 모델</span><strong>gemma4:e4b (Ollama)</strong>
+                </div>
+              </div>
+              <button class="btn-primary" onclick="batchLlm()" style="width:100%;margin-bottom:8px;">
+                <i class="bi bi-stars"></i> AI 일괄 전처리 시작
+              </button>
+              <div class="embed-running" id="llmBatchProgress">
+                <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;">
+                  <span id="llmBatchStatus">AI 처리 중...</span>
+                  <span id="llmBatchPct">0%</span>
+                </div>
+                <div class="progress-bar-wrap" style="height:8px;">
+                  <div class="progress-bar-fill" id="llmBatchBar" style="width:0%;background:var(--color-success);"></div>
+                </div>
+                <div style="margin-top:8px;">
+                  <button class="btn-default btn-sm" onclick="AdminToast.show('취소 요청됨. 현재 항목 완료 후 중단됩니다.','warning')">취소</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TAB 6: PDF 임베딩/컬렉션 ══ -->
+      <div class="tab-pane" id="pane-embedding">
+        <div class="embed-layout">
+          <!-- 좌측: 필드 구조 -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <span>PDF 구조 자동 분석 결과</span>
+              <span style="font-size:12px;color:var(--color-success);">✓ 분석 완료</span>
+            </div>
+            <div class="admin-card-body">
+              <div style="margin-bottom:12px;">
+                <div style="font-size:12px;color:var(--color-text-sub);margin-bottom:8px;">임베딩 텍스트 템플릿 (자동 제안)</div>
+                <div style="font-family:monospace;font-size:12px;padding:10px 12px;background:#FAFAFA;border:1px solid var(--color-border-light);border-radius:var(--radius-base);line-height:1.8;">
+                  {section_title}: {content}
+                </div>
+              </div>
+              <div style="font-size:13px;font-weight:500;margin-bottom:8px;">필드 구조 및 역할 지정</div>
+              <div id="fieldMapList"></div>
+              <div style="margin-top:12px;padding:10px;background:#F0F7FF;border-radius:var(--radius-base);font-size:12px;color:var(--color-primary);">
+                <i class="bi bi-info-circle"></i> 벡터화 필드: AI 검색 핵심 필드 / 메타데이터 필드: 검색 결과 부가 정보
+              </div>
+            </div>
+          </div>
+
+          <!-- 우측: 임베딩 설정 + 실행 -->
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <div class="admin-card">
+              <div class="admin-card-header">컬렉션 설정</div>
+              <div class="admin-card-body" style="display:flex;flex-direction:column;gap:10px;">
+                <div>
+                  <label style="font-size:12px;color:var(--color-text-sub);display:block;margin-bottom:4px;">저장 방식</label>
+                  <select class="form-select" style="height:36px;" id="embedMode">
+                    <option>신규 컬렉션 생성</option>
+                    <option>기존 컬렉션 추가 적재</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size:12px;color:var(--color-text-sub);display:block;margin-bottom:4px;">컬렉션명</label>
+                  <input type="text" class="form-input" value="as_manual_v2" style="height:36px;">
+                </div>
+                <div>
+                  <label style="font-size:12px;color:var(--color-text-sub);display:block;margin-bottom:4px;">벡터 모드</label>
+                  <select class="form-select" style="height:36px;">
+                    <option selected>Hybrid (권장)</option>
+                    <option>Dense only</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="admin-card">
+              <div class="admin-card-body" style="padding:14px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:10px;font-size:13px;">
+                  <span style="color:var(--color-text-sub);">임베딩 대상</span><strong>84건 (검수 완료)</strong>
+                </div>
+                <button class="btn-primary" style="width:100%;" onclick="startEmbedding()">
+                  <i class="bi bi-database-up"></i> 임베딩 시작
+                </button>
+                <div class="embed-running" id="embedRunning" style="margin-top:10px;">
+                  <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;">
+                    <span id="embedStatus">인덱싱 중...</span>
+                    <span id="embedPct">0%</span>
+                  </div>
+                  <div class="progress-bar-wrap" style="height:8px;">
+                    <div class="progress-bar-fill" id="embedBar" style="width:0%;"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ TAB 7: RAG 시스템 컬렉션 ══ -->
+      <div class="tab-pane" id="pane-rag">
+        <div class="rag-collection-layout">
+
+          <!-- 컬렉션 목록 -->
+          <div class="admin-card">
+            <div class="admin-card-header">컬렉션 목록</div>
+            <div class="admin-card-body" style="padding:0;">
+              <div id="ragCollList"></div>
+            </div>
+          </div>
+
+          <!-- 검색 및 결과 -->
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <span id="ragCollTitle">컬렉션 선택</span>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <select class="form-select" style="height:32px;width:160px;font-size:13px;" id="ragActiveToggle">
+                  <option>활성 컬렉션으로 전환</option>
+                  <option>비활성으로 전환</option>
+                </select>
+                <button class="btn-default btn-sm" onclick="AdminToast.show('컬렉션 설정이 저장됐습니다.')">저장</button>
+              </div>
+            </div>
+            <div class="admin-card-body">
+              <div style="display:flex;gap:8px;margin-bottom:16px;">
+                <input type="text" class="form-input" id="ragSearchInput"
+                  placeholder="키워드로 유사도 검색..." style="height:36px;"
+                  onkeydown="if(event.key==='Enter')ragSearch()">
+                <button class="btn-primary btn-sm" onclick="ragSearch()"><i class="bi bi-search"></i> 검색</button>
+              </div>
+              <div id="ragResultArea">
+                <div style="text-align:center;padding:32px;color:var(--color-text-disabled);">
+                  <i class="bi bi-database" style="font-size:36px;display:block;margin-bottom:8px;"></i>
+                  컬렉션을 선택하고 키워드를 입력하세요.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 전처리 일괄 결과 모달 -->
+  <div class="modal-overlay" id="modalBatchResult">
+    <div class="modal-box" style="width:480px;">
+      <div class="modal-header">
+        <span>일괄 처리 완료</span>
+        <button class="modal-close" data-modal-close="modalBatchResult">✕</button>
+      </div>
+      <div class="modal-body" id="modalBatchBody"></div>
+      <div class="modal-footer">
+        <button class="btn-primary btn-sm" data-modal-close="modalBatchResult">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+  /* ── 탭 전환 ── */
+  document.querySelectorAll('#pipeTabs .pipe-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('#pipeTabs .pipe-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('pane-' + tab.dataset.tab).classList.add('active');
+    });
+  });
+
+  /* ── PDF 문서 Job 목록 ── */
+  const PDF_JOBS = [
+    { name:'AS_매뉴얼_v2.pdf',    date:'2026-05-31 14:22', parse:'done', review:'running', embed:'wait' },
+    { name:'제품설명서_v3.pdf',   date:'2026-05-30 10:15', parse:'done', review:'wait',    embed:'wait' },
+    { name:'FAQ_가이드_2025.pdf', date:'2026-05-28 09:44', parse:'done', review:'done',    embed:'done' },
+  ];
+  function renderPdfJobs() {
+    const statusText = { done:'완료', running:'진행중', wait:'대기', error:'오류' };
+    document.getElementById('pdfJobBody').innerHTML = PDF_JOBS.map(j => `
+      <tr>
+        <td style="font-size:13px;">${j.name}</td>
+        <td style="font-size:12px;color:var(--color-text-sub);">${j.date}</td>
+        <td><span class="job-status-badge ${j.parse}">${statusText[j.parse]}</span></td>
+        <td><span class="job-status-badge ${j.review}">${statusText[j.review]}</span></td>
+        <td><span class="job-status-badge ${j.embed}">${statusText[j.embed]}</span></td>
+        <td style="display:flex;gap:4px;">
+          <button class="btn-default btn-sm" onclick="goTab('pdf-parse')">파싱</button>
+          <button class="btn-default btn-sm" onclick="goTab('pdf-review')">검수</button>
+        </td>
+      </tr>`).join('');
+  }
+  function selectPdf(el) {
+    const f = el.files[0];
+    if (f) document.getElementById('pdfFileName').textContent = f.name + ' (' + (f.size/1024).toFixed(1) + ' KB)';
+  }
+  function uploadPdf() {
+    const name = document.getElementById('pdfFileName').textContent;
+    if (name.includes('파일을 선택')) { AdminToast.show('파일을 먼저 선택하세요.', 'warning'); return; }
+    PDF_JOBS.unshift({ name: name.split(' (')[0], date: new Date().toLocaleString(), parse:'running', review:'wait', embed:'wait' });
+    renderPdfJobs();
+    AdminToast.show('업로드 및 파싱이 시작됐습니다.');
+  }
+  function goTab(key) {
+    document.querySelectorAll('#pipeTabs .pipe-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    const tab = document.querySelector(`[data-tab="${key}"]`);
+    tab?.classList.add('active');
+    document.getElementById('pane-' + key)?.classList.add('active');
+  }
+
+  /* ── 파서 변경 ── */
+  function changeParser(btn) {
+    AdminConfirm.show({
+      title: '파서 수동 변경',
+      message: '선택한 파서로 최적 파서를 변경하시겠습니까?',
+      onConfirm: () => {
+        document.querySelectorAll('.parser-select-btn').forEach(b => { b.className = 'parser-select-btn'; b.textContent = '선택'; });
+        btn.className = 'parser-select-btn selected'; btn.textContent = '선택됨';
+        AdminToast.show('파서가 변경됐습니다.');
+      }
+    });
+  }
+
+  /* ── PDF 검수 항목 ── */
+  const REVIEW_ITEMS = [
+    { id:1, text:'블랙박스 AS 안내 — 제품의 이상 발생 시 아래 절차를 따라 AS를 접수하시기 바랍니다.', status:'ok' },
+    { id:2, text:'제품 구매일로부터 1년 이내의 경우 무상 수리가 가능합니다. 단, 소모품 및 외관 손상 제외.', status:'edit' },
+    { id:3, text:'AS 접수 방법: 1. 고객센터 전화 2. 온라인 접수 3. 서비스센터 직접 방문', status:'ok' },
+    { id:4, text:'블랙박스 전원 켜기 및 초기 설정 안내', status:'low' },
+    { id:5, text:'영상 저장 오류 시 SD카드 포맷 방법', status:'ok' },
+  ];
+  function renderReviewItems() {
+    const statusLabel = { ok:'검수완료', edit:'수정완료', low:'저가치', exclude:'제외' };
+    document.getElementById('reviewItems').innerHTML = REVIEW_ITEMS.map(item => `
+      <div class="review-item-row">
+        <span style="font-size:12px;color:var(--color-text-disabled);flex-shrink:0;">§${item.id}</span>
+        <div class="review-item-text">${item.text}</div>
+        <span class="review-item-status ${item.status}">${statusLabel[item.status]}</span>
+        <div style="display:flex;gap:4px;flex-shrink:0;">
+          <button class="btn-default btn-sm" style="padding:2px 8px;font-size:11px;" onclick="editItem(${item.id})"><i class="bi bi-pencil"></i></button>
+          <select style="height:26px;font-size:11px;border:1px solid var(--color-border);border-radius:2px;padding:0 4px;" onchange="changeItemStatus(${item.id},this.value)">
+            <option value="ok" ${item.status==='ok'?'selected':''}>검수완료</option>
+            <option value="low" ${item.status==='low'?'selected':''}>저가치</option>
+            <option value="exclude" ${item.status==='exclude'?'selected':''}>제외</option>
+          </select>
+        </div>
+      </div>`).join('');
+  }
+  function selectReviewJob(el, name) {
+    document.querySelectorAll('.review-job-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    AdminToast.show(`${name}.pdf 검수 항목을 불러왔습니다.`);
+  }
+  function editItem(id) { AdminToast.show(`항목 ${id} 편집 모드 진입`); }
+  function changeItemStatus(id, val) {
+    const item = REVIEW_ITEMS.find(x => x.id === id);
+    if (item) { item.status = val; renderReviewItems(); AdminToast.show('상태가 변경됐습니다.'); }
+  }
+  function bulkPreproc(type) {
+    const label = type === 'regex' ? '정규식' : 'AI';
+    AdminConfirm.show({
+      title: `${label} 일괄 전처리`,
+      message: `전체 검수 항목에 ${label} 전처리를 일괄 적용하시겠습니까?`,
+      onConfirm: () => AdminToast.show(`${label} 일괄 전처리가 완료됐습니다.`)
+    });
+  }
+
+  /* ── 정규식 전처리 ── */
+  function runRegex() {
+    const input = document.getElementById('regexInput').value;
+    const output = input.replace(/\s+/g, ' ').replace(/\n+/g, '\n').trim();
+    document.getElementById('regexOutput').textContent = output;
+    document.getElementById('regexResult').style.display = 'block';
+  }
+  function batchRegex() {
+    const box = document.getElementById('regexBatchProgress');
+    box.classList.add('show');
+    let pct = 0;
+    const t = setInterval(() => {
+      pct += 5;
+      document.getElementById('regexBatchBar').style.width = pct + '%';
+      document.getElementById('regexBatchPct').textContent = pct + '%';
+      document.getElementById('regexBatchStatus').textContent = `처리 중 (${Math.round(pct * 0.84)}건/84건)`;
+      if (pct >= 100) {
+        clearInterval(t);
+        document.getElementById('regexBatchStatus').textContent = '완료';
+        document.getElementById('modalBatchBody').innerHTML = `
+          <div style="display:flex;flex-direction:column;gap:8px;font-size:13px;">
+            <div style="display:flex;justify-content:space-between;"><span>처리 완료</span><strong>84건</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span>변경됨</span><strong style="color:var(--color-primary);">67건</strong></div>
+            <div style="display:flex;justify-content:space-between;"><span>변경 없음</span><strong>17건</strong></div>
+          </div>`;
+        AdminModal.open('modalBatchResult');
+      }
+    }, 80);
+  }
+
+  /* ── LLM 전처리 ── */
+  function runLlm() {
+    document.getElementById('llmOutput').textContent = '블랙박스 AS 안내입니다. 제품에 이상이 발생한 경우 아래 절차에 따라 AS를 접수하시기 바랍니다.';
+    document.getElementById('llmQuestions').innerHTML = '· 블랙박스 AS 신청 방법은?<br>· AS 접수 절차를 알려주세요.<br>· 제품 수리 신청은 어떻게 하나요?';
+    document.getElementById('llmResult').style.display = 'block';
+  }
+  function batchLlm() {
+    const box = document.getElementById('llmBatchProgress');
+    box.classList.add('show');
+    let pct = 0;
+    const t = setInterval(() => {
+      pct += 3;
+      document.getElementById('llmBatchBar').style.width = pct + '%';
+      document.getElementById('llmBatchPct').textContent = pct + '%';
+      document.getElementById('llmBatchStatus').textContent = `AI 처리 중 (${Math.round(pct*0.54)}건/54건)`;
+      if (pct >= 100) {
+        clearInterval(t);
+        document.getElementById('llmBatchStatus').textContent = '완료';
+        AdminToast.show('AI 일괄 전처리가 완료됐습니다. 54건 처리됨.');
+      }
+    }, 120);
+  }
+
+  /* ── 임베딩 ── */
+  const FIELDS = [
+    { name:'section_title', role:'vector' },
+    { name:'content',       role:'vector' },
+    { name:'page_num',      role:'meta'   },
+    { name:'source_pdf',    role:'meta'   },
+    { name:'job_id',        role:'ignore' },
+  ];
+  const roleLabel = { vector:'벡터화', meta:'메타데이터', ignore:'제외' };
+  const roleColor = { vector:'vector', meta:'meta', ignore:'ignore' };
+
+  function renderFields() {
+    document.getElementById('fieldMapList').innerHTML = FIELDS.map(f => `
+      <div class="field-map-row">
+        <span style="font-family:monospace;font-size:12px;color:var(--color-text-main);flex:1;">{${f.name}}</span>
+        <span class="field-role-badge ${roleColor[f.role]}">${roleLabel[f.role]}</span>
+        <select style="height:28px;font-size:12px;border:1px solid var(--color-border);border-radius:2px;padding:0 6px;">
+          <option ${f.role==='vector'?'selected':''}>벡터화</option>
+          <option ${f.role==='meta'?'selected':''}>메타데이터</option>
+          <option ${f.role==='ignore'?'selected':''}>제외</option>
+        </select>
+      </div>`).join('');
+  }
+
+  function startEmbedding() {
+    AdminConfirm.show({
+      title: '임베딩 시작',
+      message: '84건을 벡터 DB에 저장합니다. 시작하시겠습니까?',
+      onConfirm: () => {
+        document.getElementById('embedRunning').classList.add('show');
+        let pct = 0;
+        const t = setInterval(() => {
+          pct += 4;
+          document.getElementById('embedBar').style.width = pct + '%';
+          document.getElementById('embedPct').textContent = pct + '%';
+          document.getElementById('embedStatus').textContent = `인덱싱 중 (${Math.round(pct*0.84)}건/84건)`;
+          if (pct >= 100) {
+            clearInterval(t);
+            document.getElementById('embedStatus').textContent = '임베딩 완료';
+            AdminToast.show('임베딩이 완료됐습니다. RAG 시스템 컬렉션 탭에서 확인하세요.');
+          }
+        }, 100);
+      }
+    });
+  }
+
+  /* ── RAG 컬렉션 ── */
+  const RAG_COLLS = [
+    { name:'as_kms',       docs:18430, active:true  },
+    { name:'faq_approved', docs:4200,  active:true  },
+    { name:'cs_scripts',   docs:9810,  active:false },
+    { name:'as_manual_v2', docs:84,    active:true  },
+  ];
+  const RAG_RESULTS = [
+    { score_r:0.799, score_h:0.611, text:'블랙박스 점검요청 — IB BLACK PRIME 2K', meta:'kiwi_keywords: 블랙박스 점검요청, 처리상세: 점검 후 작동이상 무' },
+    { score_r:0.483, score_h:0.114, text:'충전불량,(블랙박스 건원 불)', meta:'model: MXF, 상세증상: 충전불량' },
+    { score_r:0.470, score_h:0.258, text:'블랙박스 화질 불량', meta:'model: LS300, 상세증상: 화질불량' },
+    { score_r:0.399, score_h:0.096, text:'블랙박스의 전면 카메라가 화면에 까맣게 안뜨고, 가끔만 화면이 보임. 후면카메라는 계속 잘 나옴.', meta:'model: QXD5000, 채널: AS' },
+  ];
+  let selectedRagColl = null;
+
+  function renderRagColls() {
+    document.getElementById('ragCollList').innerHTML = RAG_COLLS.map(c => `
+      <div style="padding:12px 16px;border-bottom:1px solid var(--color-border-light);cursor:pointer;
+        background:${selectedRagColl===c.name?'var(--color-primary-light)':'white'};
+        ${selectedRagColl===c.name?'border-left:3px solid var(--color-primary);':''}"
+        onclick="selectRagColl('${c.name}')">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;">
+          <span style="font-size:13px;font-weight:500;">${c.name}</span>
+          <span style="font-size:11px;padding:1px 7px;border-radius:9px;background:${c.active?'rgba(82,196,26,0.12)':'rgba(0,0,0,0.06)'};color:${c.active?'var(--color-success)':'var(--color-text-disabled)'};">
+            ${c.active?'활성':'비활성'}
+          </span>
+        </div>
+        <div style="font-size:11px;color:var(--color-text-sub);">${c.docs.toLocaleString()}건</div>
+      </div>`).join('');
+  }
+
+  function selectRagColl(name) {
+    selectedRagColl = name;
+    const c = RAG_COLLS.find(x => x.name === name);
+    document.getElementById('ragCollTitle').textContent = name + ' (' + c.docs.toLocaleString() + '건)';
+    document.getElementById('ragResultArea').innerHTML = `
+      <div style="text-align:center;padding:20px;color:var(--color-text-disabled);">
+        <i class="bi bi-search" style="font-size:24px;display:block;margin-bottom:6px;"></i>
+        키워드를 입력해 유사도 검색을 실행하세요.
+      </div>`;
+    renderRagColls();
+  }
+
+  function ragSearch() {
+    const q = document.getElementById('ragSearchInput').value.trim();
+    if (!q || !selectedRagColl) { AdminToast.show('컬렉션 선택 후 키워드를 입력하세요.', 'warning'); return; }
+    document.getElementById('ragResultArea').innerHTML = `
+      <div style="font-size:12px;color:var(--color-text-sub);margin-bottom:10px;">"${q}" 검색 결과 ${RAG_RESULTS.length}건</div>
+      ${RAG_RESULTS.map((r, i) => `
+        <div class="rag-result-card">
+          <div class="rag-result-header">
+            <span style="font-size:12px;color:var(--color-text-sub);font-weight:600;">#${i+1}</span>
+            <span class="rag-score-badge r">R ${r.score_r}</span>
+            <span class="rag-score-badge h">H ${r.score_h}</span>
+            <span style="font-size:11px;color:var(--color-text-sub);margin-left:4px;">source ${selectedRagColl}</span>
+            <button style="margin-left:auto;font-size:11px;background:none;border:none;color:var(--color-text-sub);cursor:pointer;" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">메타데이터 ▼</button>
+            <div style="display:none;font-size:11px;color:var(--color-text-sub);padding:6px 0;white-space:pre-wrap;">${r.meta}</div>
+          </div>
+          <div class="rag-result-text">${r.text}</div>
+        </div>`).join('')}`;
+  }
+
+  /* ── 초기화 ── */
+  renderPdfJobs();
+  renderReviewItems();
+  renderFields();
+  renderRagColls();
+  </script>
+</body>
+</html>

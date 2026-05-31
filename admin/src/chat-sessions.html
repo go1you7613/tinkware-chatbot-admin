@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>채팅 세션 관리 — 팅크웨어 챗봇 관리자</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+  <style>
+    body { background: var(--color-bg-page); }
+    .chat-layout { display: grid; grid-template-columns: 40% 1fr; gap: 16px; align-items: start; }
+    .session-filter { display: grid; grid-template-columns: 1fr 130px 150px; gap: 8px; margin-bottom: 12px; }
+    .session-list { display: flex; flex-direction: column; gap: 8px; }
+    .session-card { padding: 12px 14px; border: 1px solid var(--color-border-light); border-radius: var(--radius-card); cursor: pointer; background: white; }
+    .session-card:hover, .session-card.active { border-color: var(--color-primary); background: var(--color-primary-light); }
+    .message { max-width: 72%; padding: 10px 12px; border-radius: 8px; font-size: 13px; line-height: 1.6; }
+    .msg-user { margin-left: auto; background: var(--color-primary); color: white; }
+    .msg-ai { background: #F5F5F5; color: var(--color-text-main); }
+    .msg-time { font-size: 11px; color: var(--color-text-sub); margin: 4px 0 12px; }
+    .msg-time.user { text-align: right; }
+  </style>
+</head>
+<body data-admin-menu="chat" data-admin-submenu="채팅 세션 관리" data-admin-page="chat-sessions">
+  <div id="adminHeader"></div>
+  <div id="adminSidebar"></div>
+  <div class="main-wrap" id="mainWrap">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">채팅 세션 관리</div>
+        <div class="breadcrumb-row">
+          <span>홈</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span>채팅 관리</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span style="color:var(--color-text-main);">채팅 세션 관리</span>
+        </div>
+      </div>
+
+      <div class="chat-layout">
+        <div class="admin-card">
+          <div class="admin-card-header">세션 목록</div>
+          <div class="admin-card-body">
+            <div class="session-filter">
+              <input class="form-input" id="sessionSearch" placeholder="첫 메시지 또는 사용자 ID 검색">
+              <select class="form-select" id="channelFilter"><option value="">전체 채널</option><option>웹</option><option>카카오톡</option></select>
+              <input class="form-input" id="dateFilter" type="date" value="2026-05-31">
+            </div>
+            <div class="session-list" id="sessionList"></div>
+          </div>
+        </div>
+        <div class="admin-card">
+          <div class="admin-card-header"><span id="chatTitle">대화 내역</span><button class="btn-default btn-sm" id="exportBtn"><i class="bi bi-download"></i> 내보내기</button></div>
+          <div class="admin-card-body">
+            <div id="sessionInfo" style="display:flex;gap:8px;margin-bottom:16px;color:var(--color-text-sub);font-size:13px;">세션을 선택하세요.</div>
+            <div id="timeline"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+    const sessions = [
+      { id: 'WEB-240531-001', user: 'user-1042', channel: '웹', start: '2026-05-31 09:12', title: '블랙박스 영상이 저장되지 않아요', messages: [['user', '블랙박스 영상이 저장되지 않아요.', '09:12'], ['ai', '메모리카드 상태와 녹화 설정을 먼저 확인해 주세요.', '09:12'], ['user', '포맷은 어디서 하나요?', '09:13'], ['ai', '제품 설정 메뉴의 저장장치 관리에서 포맷할 수 있습니다.', '09:13']] },
+      { id: 'KAKAO-240531-008', user: 'kakao-2381', channel: '카카오톡', start: '2026-05-31 10:40', title: '내비게이션 업데이트 방법 알려주세요', messages: [['user', '내비게이션 업데이트 방법 알려주세요.', '10:40'], ['ai', '아이나비 매니저 설치 후 모델을 연결해 업데이트할 수 있습니다.', '10:41']] },
+      { id: 'WEB-240531-014', user: 'user-2188', channel: '웹', start: '2026-05-31 14:05', title: 'AS 접수 가능한 센터가 궁금합니다', messages: [['user', 'AS 접수 가능한 센터가 궁금합니다.', '14:05'], ['ai', '지역명을 알려주시면 가까운 센터를 안내해 드리겠습니다.', '14:05']] }
+    ];
+
+    function renderSessions() {
+      const keyword = document.getElementById('sessionSearch').value.trim();
+      const channel = document.getElementById('channelFilter').value;
+      document.getElementById('sessionList').innerHTML = sessions
+        .filter((item) => (!keyword || item.title.includes(keyword) || item.user.includes(keyword)) && (!channel || item.channel === channel))
+        .map((item, index) => `
+          <div class="session-card" data-index="${index}">
+            <div style="display:flex;justify-content:space-between;gap:8px;margin-bottom:6px;">
+              <strong>${item.title}</strong><span class="badge ${item.channel === '웹' ? 'badge-primary' : 'badge-warning'}">${item.channel}</span>
+            </div>
+            <div style="font-size:12px;color:var(--color-text-sub);">${item.user} · ${item.start}</div>
+          </div>`).join('');
+    }
+
+    function openSession(index) {
+      const session = sessions[index];
+      document.querySelectorAll('.session-card').forEach((card) => card.classList.remove('active'));
+      document.querySelector(`.session-card[data-index="${index}"]`)?.classList.add('active');
+      document.getElementById('chatTitle').textContent = session.title;
+      document.getElementById('sessionInfo').innerHTML = `<span>사용자 ID: ${session.user}</span><span>채널: ${session.channel}</span><span>시작: ${session.start}</span>`;
+      document.getElementById('timeline').innerHTML = session.messages.map(([role, text, time]) => `
+        <div class="message ${role === 'user' ? 'msg-user' : 'msg-ai'}">${text}</div>
+        <div class="msg-time ${role === 'user' ? 'user' : ''}">${time}</div>`).join('');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderSessions();
+      document.getElementById('sessionList').addEventListener('click', (event) => {
+        const card = event.target.closest('.session-card');
+        if (card) openSession(Number(card.dataset.index));
+      });
+      ['sessionSearch', 'channelFilter', 'dateFilter'].forEach((id) => document.getElementById(id).addEventListener('input', renderSessions));
+      document.getElementById('exportBtn').addEventListener('click', () => AdminToast.show('대화 내역 내보내기를 준비했습니다.'));
+      openSession(0);
+    });
+  </script>
+</body>
+</html>

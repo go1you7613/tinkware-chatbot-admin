@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>익명화 처리 — 팅크웨어 챗봇 관리자</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+  <style>
+    body { background: var(--color-bg-page); }
+    .anonym-layout { display: grid; grid-template-columns: 35% 1fr; gap: 16px; align-items: start; }
+    .pattern-group { display: flex; flex-direction: column; gap: 8px; }
+    .pattern-check { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border: 1px solid var(--color-border-light); border-radius: var(--radius-base); cursor: pointer; }
+    .pattern-check:hover { background: #FAFAFA; }
+    .pattern-check input { accent-color: var(--color-primary); }
+    .legend-row { display: flex; align-items: center; gap: 8px; padding: 6px 0; font-size: 13px; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .result-box { min-height: 180px; padding: 14px 16px; border: 1px solid var(--color-border-light); border-radius: var(--radius-card); background: #FAFAFA; line-height: 1.8; }
+    .pii-mark { padding: 1px 4px; border-radius: 2px; font-weight: 500; }
+    .pii-phone { background: rgba(255,77,79,0.18); color: var(--color-error); }
+    .pii-email { background: rgba(24,144,255,0.18); color: var(--color-primary); }
+    .pii-name { background: rgba(250,173,20,0.2); color: #AD6800; }
+    .metric-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+    .metric { padding: 14px 16px; background: white; border: 1px solid var(--color-border-light); border-radius: var(--radius-card); }
+    .metric-value { font-size: 22px; font-weight: 700; color: var(--color-primary); }
+    .metric-label { font-size: 12px; color: var(--color-text-sub); }
+  </style>
+</head>
+<body data-admin-menu="data-management" data-admin-submenu="익명화 처리" data-admin-page="anonymization">
+  <div id="adminHeader"></div>
+  <div id="adminSidebar"></div>
+
+  <div class="main-wrap" id="mainWrap">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">익명화 처리</div>
+        <div class="breadcrumb-row">
+          <span>홈</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span>데이터 관리</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span style="color:var(--color-text-main);">익명화 처리</span>
+        </div>
+      </div>
+
+      <div class="anonym-layout">
+        <div class="admin-card">
+          <div class="admin-card-header">검출 설정</div>
+          <div class="admin-card-body">
+            <div class="accordion-section open">
+              <div class="accordion-header">내장 패턴 <span class="count">8</span><i class="bi bi-chevron-down accordion-chevron"></i></div>
+              <div class="accordion-body">
+                <div class="pattern-group" id="builtinPatterns"></div>
+              </div>
+            </div>
+            <div class="accordion-section open">
+              <div class="accordion-header">커스텀 패턴 <span class="count">4</span><i class="bi bi-chevron-down accordion-chevron"></i></div>
+              <div class="accordion-body">
+                <div class="pattern-group" id="customPatterns"></div>
+              </div>
+            </div>
+            <div class="accordion-section open">
+              <div class="accordion-header">검출유형 범례 <i class="bi bi-chevron-down accordion-chevron"></i></div>
+              <div class="accordion-body">
+                <div class="legend-row"><span class="legend-dot" style="background:var(--color-error);"></span>전화번호</div>
+                <div class="legend-row"><span class="legend-dot" style="background:var(--color-primary);"></span>이메일</div>
+                <div class="legend-row"><span class="legend-dot" style="background:var(--color-warning);"></span>이름/식별자</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="metric-row">
+            <div class="metric"><div class="metric-value" id="detectedCount">0</div><div class="metric-label">검출 건수</div></div>
+            <div class="metric"><div class="metric-value" id="patternCount">12</div><div class="metric-label">선택 패턴</div></div>
+            <div class="metric"><div class="metric-value" id="elapsedTime">0ms</div><div class="metric-label">처리 시간</div></div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <span>텍스트 분석</span>
+              <button class="btn-default btn-sm" id="sampleBtn"><i class="bi bi-magic"></i> 샘플 입력</button>
+            </div>
+            <div class="admin-card-body">
+              <textarea class="form-input" id="sourceText" style="height:150px;resize:vertical;" placeholder="분석할 상담 문장 또는 테스트 데이터를 입력하세요."></textarea>
+              <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+                <button class="btn-default" id="clearBtn"><i class="bi bi-eraser"></i> 초기화</button>
+                <button class="btn-primary" id="runBtn"><i class="bi bi-shield-check"></i> PII 검출 실행</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-card" style="margin-top:16px;">
+            <div class="admin-card-header">검출 결과</div>
+            <div class="admin-card-body">
+              <div class="result-box" id="highlightResult">검출 실행 후 원문 하이라이팅과 마스킹 결과가 표시됩니다.</div>
+              <table class="admin-table" style="margin-top:16px;">
+                <thead><tr><th>유형</th><th>검출값</th><th>마스킹</th><th>위치</th></tr></thead>
+                <tbody id="detectRows"><tr><td colspan="4" style="color:var(--color-text-sub);">검출된 항목이 없습니다.</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+    const builtin = ['전화번호', '이메일', '주민등록번호', '생년월일', '계좌번호', '카드번호', 'IP 주소', 'URL'];
+    const custom = ['지역센터', '고객번호', '접수번호', '차량번호'];
+    const $ = (id) => document.getElementById(id);
+
+    function renderPatternList(target, list) {
+      $(target).innerHTML = list.map((name, index) => `
+        <label class="pattern-check" data-toggle-label="${name}">
+          <span>${name}</span>
+          <input type="checkbox" class="pii-pattern" ${index < 6 ? 'checked' : ''}>
+        </label>`).join('');
+    }
+
+    function maskValue(value, type) {
+      if (type === 'EMAIL') return value.replace(/^(.{2}).*(@.*)$/, '$1***$2');
+      if (type === 'PHONE') return value.replace(/(\d{3})[- ]?\d{4}[- ]?(\d{4})/, '$1-****-$2');
+      return value.slice(0, 1) + '**';
+    }
+
+    function runDetection() {
+      const text = $('sourceText').value.trim();
+      if (!text) {
+        AdminToast.show('분석할 텍스트를 입력하세요.', 'warning');
+        return;
+      }
+      const started = performance.now();
+      const rules = [
+        { type: 'PHONE', cls: 'pii-phone', regex: /010[- ]?\d{4}[- ]?\d{4}/g },
+        { type: 'EMAIL', cls: 'pii-email', regex: /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g },
+        { type: 'NAME', cls: 'pii-name', regex: /(홍길동|김관리|이상담)/g }
+      ];
+      const detections = [];
+      let html = text;
+      rules.forEach((rule) => {
+        html = html.replace(rule.regex, (match, offset) => {
+          detections.push({ type: rule.type, value: match, masked: maskValue(match, rule.type), offset });
+          return `<span class="pii-mark ${rule.cls}">${match}</span>`;
+        });
+      });
+      $('highlightResult').innerHTML = html;
+      $('detectRows').innerHTML = detections.length ? detections.map((item) => `
+        <tr><td><span class="badge badge-primary">${item.type}</span></td><td>${item.value}</td><td>${item.masked}</td><td>${item.offset}</td></tr>
+      `).join('') : '<tr><td colspan="4" style="color:var(--color-text-sub);">검출된 항목이 없습니다.</td></tr>';
+      $('detectedCount').textContent = detections.length;
+      $('patternCount').textContent = document.querySelectorAll('.pii-pattern:checked').length;
+      $('elapsedTime').textContent = Math.max(12, Math.round(performance.now() - started + 18)) + 'ms';
+      AdminToast.show('PII 검출이 완료됐습니다.');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderPatternList('builtinPatterns', builtin);
+      renderPatternList('customPatterns', custom);
+      $('sampleBtn').addEventListener('click', () => {
+        $('sourceText').value = '홍길동 고객님 연락처는 010-1234-5678이며, 안내 메일은 user@example.com 으로 발송했습니다.';
+      });
+      $('clearBtn').addEventListener('click', () => {
+        $('sourceText').value = '';
+        $('highlightResult').textContent = '검출 실행 후 원문 하이라이팅과 마스킹 결과가 표시됩니다.';
+        $('detectRows').innerHTML = '<tr><td colspan="4" style="color:var(--color-text-sub);">검출된 항목이 없습니다.</td></tr>';
+        $('detectedCount').textContent = '0';
+        $('elapsedTime').textContent = '0ms';
+      });
+      $('runBtn').addEventListener('click', runDetection);
+    });
+  </script>
+</body>
+</html>

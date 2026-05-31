@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>네트워크 오류</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 40px 20px; background: #fff; font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; color: #111; }
+    .phone-frame { width: 390px; height: 844px; border: 1px solid #111; border-radius: 16px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+    .state-header { height: 82px; border-bottom: 1px solid #e8e8e8; display: grid; grid-template-columns: 42px 1fr 42px; align-items: center; }
+    .back-btn { border: 0; background: transparent; color: #111; font-size: 34px; line-height: 1; }
+    h1 { text-align: center; font-size: 19px; font-weight: 800; }
+    .state-body { flex: 1; padding: 28px 18px; display: flex; flex-direction: column; }
+    .error-hero { margin-top: 76px; text-align: center; }
+    .error-icon { width: 82px; height: 82px; margin: 0 auto 24px; border-radius: 50%; background: #e0ecfa; color: #0b73d9; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 800; }
+    .error-hero h2 { font-size: 24px; font-weight: 800; line-height: 1.3; }
+    .error-hero p { margin-top: 14px; color: #666; font-size: 15px; line-height: 1.6; }
+    .status-card { margin-top: 36px; border: 1px solid #d9e8fb; border-radius: 16px; background: #f8fbff; padding: 18px; }
+    .status-row { display: flex; justify-content: space-between; color: #555; font-size: 14px; }
+    .status-row + .status-row { margin-top: 12px; padding-top: 12px; border-top: 1px solid #d9e8fb; }
+    .status-row strong { color: #222; }
+    .primary-btn { margin-top: auto; height: 54px; border: 1px solid #0b73d9; border-radius: 14px; background: #0b73d9; color: #fff; font: inherit; font-size: 17px; font-weight: 800; }
+    .secondary-btn { height: 54px; margin-top: 10px; border: 1px solid #d9d9d9; border-radius: 14px; background: #fff; color: #777; font: inherit; font-size: 16px; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <main class="phone-frame">
+    <header class="state-header">
+      <button class="back-btn" type="button" aria-label="뒤로가기">‹</button>
+      <h1>네트워크 오류</h1>
+    </header>
+    <section class="state-body">
+      <div class="error-hero">
+        <div class="error-icon" aria-hidden="true">!</div>
+        <h2>정보를 불러오지 못했습니다.</h2>
+        <p>일시적으로 연결이 원활하지 않습니다.<br>네트워크 상태를 확인한 뒤 다시 시도해주세요.</p>
+      </div>
+      <div class="status-card">
+        <div class="status-row"><span>요청 화면</span><strong>서비스센터 찾기</strong></div>
+        <div class="status-row"><span>오류 상태</span><strong>연결 지연</strong></div>
+        <div class="status-row"><span>권장 조치</span><strong>잠시 후 재시도</strong></div>
+      </div>
+      <button class="primary-btn" type="button">다시 시도하기</button>
+      <button class="secondary-btn" type="button">AI Chat으로 돌아가기</button>
+    </section>
+  </main>
+</body>
+</html>

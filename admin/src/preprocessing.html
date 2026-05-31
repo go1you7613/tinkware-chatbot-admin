@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>데이터 전처리 관리 — 팅크웨어 챗봇 관리자</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/admin.css">
+  <style>
+    body { background: var(--color-bg-page); }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+    .toolbar { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .toolbar-left { display: flex; gap: 8px; min-width: 360px; }
+    .action-btn { width: 30px; height: 30px; border: 0; background: transparent; color: var(--color-text-sub); border-radius: var(--radius-base); }
+    .action-btn:hover { background: var(--color-primary-light); color: var(--color-primary); }
+    .action-btn.danger:hover { background: rgba(255,77,79,0.1); color: var(--color-error); }
+    .option-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  </style>
+</head>
+<body data-admin-menu="data-management" data-admin-submenu="데이터 전처리 관리" data-admin-page="preprocessing">
+  <div id="adminHeader"></div>
+  <div id="adminSidebar"></div>
+  <div class="main-wrap" id="mainWrap">
+    <div class="page-content">
+      <div class="page-header">
+        <div class="page-title">데이터 전처리 관리</div>
+        <div class="breadcrumb-row">
+          <span>홈</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span>데이터 관리</span><span class="sep"><i class="bi bi-chevron-right" style="font-size:10px;"></i></span>
+          <span style="color:var(--color-text-main);">데이터 전처리 관리</span>
+        </div>
+      </div>
+
+      <div class="admin-tabs" id="preprocessTabs">
+        <div class="admin-tab active" data-tab="prewords">전처리 단어사전 <span class="tab-count">34</span></div>
+        <div class="admin-tab" data-tab="exclude">제외 단어사전 <span class="tab-count">75</span></div>
+        <div class="admin-tab" data-tab="suffix">NER 분리 접미사 <span class="tab-count">17</span></div>
+        <div class="admin-tab" data-tab="region">NER 지역명 <span class="tab-count">66</span></div>
+        <div class="admin-tab" data-tab="kms">KMS 분류</div>
+        <div class="admin-tab" data-tab="utility">유틸</div>
+      </div>
+
+      <div class="admin-card">
+        <div class="admin-card-body">
+          <div class="tab-pane active" id="pane-prewords" data-title="전처리 단어"></div>
+          <div class="tab-pane" id="pane-exclude" data-title="제외 단어"></div>
+          <div class="tab-pane" id="pane-suffix" data-title="NER 분리 접미사"></div>
+          <div class="tab-pane" id="pane-region" data-title="NER 지역명"></div>
+          <div class="tab-pane" id="pane-kms">
+            <div class="admin-card" style="box-shadow:none;margin-bottom:16px;">
+              <div class="admin-card-header">KMS 분류 옵션</div>
+              <div class="admin-card-body">
+                <div class="option-grid">
+                  <div><label style="font-size:13px;color:var(--color-text-sub);">분석 대상 컬럼</label><select class="form-select"><option>상담내용</option><option>처리상세</option><option>문의내용</option></select></div>
+                  <div><label style="font-size:13px;color:var(--color-text-sub);">최소 텍스트 길이</label><input class="form-input" type="number" value="80"></div>
+                  <div><label style="font-size:13px;color:var(--color-text-sub);">고유 어절 기준</label><input class="form-input" type="number" value="12"></div>
+                </div>
+                <div style="display:flex;justify-content:flex-end;margin-top:16px;">
+                  <button class="btn-primary" id="kmsStartBtn"><i class="bi bi-play-fill"></i> KMS 분류 시작</button>
+                </div>
+              </div>
+            </div>
+            <table class="admin-table">
+              <thead><tr><th>상담 ID</th><th>분류</th><th>점수</th><th>상태</th></tr></thead>
+              <tbody id="kmsRows"></tbody>
+            </table>
+          </div>
+          <div class="tab-pane" id="pane-utility">
+            <div class="admin-card" style="box-shadow:none;">
+              <div class="admin-card-header">CSV 다운로드</div>
+              <div class="admin-card-body" style="display:flex;gap:8px;align-items:center;">
+                <button class="btn-primary" data-download="KMS 후보"><i class="bi bi-download"></i> KMS 후보 CSV</button>
+                <button class="btn-default" data-download="상담원 연결"><i class="bi bi-download"></i> 상담원 연결 CSV</button>
+                <button class="btn-default" data-download="사전 전체"><i class="bi bi-download"></i> 사전 전체 CSV</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="itemModal">
+    <div class="modal-box">
+      <div class="modal-header"><span id="modalTitle">항목 추가</span><button class="modal-close" data-modal-close="itemModal">✕</button></div>
+      <div class="modal-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label style="font-size:13px;color:var(--color-text-sub);">분류</label><input class="form-input" id="modalCategory"></div>
+          <div><label style="font-size:13px;color:var(--color-text-sub);">항목명/값</label><input class="form-input" id="modalValue"></div>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:13px;"><input type="checkbox" id="modalWordOnly" checked> 단어 단위 매칭</label>
+      </div>
+      <div class="modal-footer"><button class="btn-default btn-sm" data-modal-close="itemModal">취소</button><button class="btn-primary btn-sm" id="saveItemBtn">저장</button></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="js/layout.js"></script>
+  <script src="js/admin.js"></script>
+  <script>
+    const dictionaries = {
+      prewords: [
+        { category: 'CATEGORY', value: '네비게이션', active: true },
+        { category: 'CATEGORY', value: '블랙박스', active: true },
+        { category: 'MODEL', value: '아이나비', active: true }
+      ],
+      exclude: [
+        { category: 'KEYWORD', value: '감사합니다', active: true },
+        { category: 'KEYWORD', value: '수고하세요', active: true },
+        { category: 'KEYWORD', value: '테스트', active: false }
+      ],
+      suffix: [
+        { category: 'SUFFIX', value: '점', active: true },
+        { category: 'SUFFIX', value: '센터', active: true },
+        { category: 'SUFFIX', value: '지점', active: true }
+      ],
+      region: [
+        { category: 'REGION', value: '서울', active: true },
+        { category: 'REGION', value: '부산', active: true },
+        { category: 'REGION', value: '대구', active: true }
+      ]
+    };
+    let currentPane = 'prewords';
+    let editIndex = null;
+
+    function renderDictionary(key) {
+      const pane = document.getElementById('pane-' + key);
+      const title = pane.dataset.title;
+      const rows = dictionaries[key].map((item, index) => `
+        <tr>
+          <td><label class="toggle-switch" data-toggle-label="${item.value}"><input type="checkbox" ${item.active ? 'checked' : ''}><span class="toggle-slider"></span></label></td>
+          <td>${item.category}</td>
+          <td>${item.value}</td>
+          <td style="text-align:right;">
+            <button class="action-btn" data-edit="${index}" title="수정"><i class="bi bi-pencil"></i></button>
+            <button class="action-btn danger" data-delete="${index}" title="삭제"><i class="bi bi-trash"></i></button>
+          </td>
+        </tr>`).join('');
+      pane.innerHTML = `
+        <div class="toolbar">
+          <div class="toolbar-left"><input class="form-input" data-search="${key}" placeholder="${title} 검색"></div>
+          <button class="btn-primary" data-add="${key}"><i class="bi bi-plus-lg"></i> 추가</button>
+        </div>
+        <table class="admin-table"><thead><tr><th>활성</th><th>분류</th><th>항목명/값</th><th style="text-align:right;">관리</th></tr></thead><tbody>${rows}</tbody></table>`;
+    }
+
+    function openItemModal(key, index = null) {
+      currentPane = key;
+      editIndex = index;
+      const item = index === null ? { category: '', value: '' } : dictionaries[key][index];
+      document.getElementById('modalTitle').textContent = index === null ? '항목 추가' : '항목 수정';
+      document.getElementById('modalCategory').value = item.category;
+      document.getElementById('modalValue').value = item.value;
+      AdminModal.open('itemModal');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      Object.keys(dictionaries).forEach(renderDictionary);
+      document.getElementById('preprocessTabs').addEventListener('click', (event) => {
+        const tab = event.target.closest('.admin-tab');
+        if (!tab) return;
+        document.querySelectorAll('#preprocessTabs .admin-tab').forEach((item) => item.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach((pane) => pane.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('pane-' + tab.dataset.tab).classList.add('active');
+      });
+      document.body.addEventListener('click', (event) => {
+        const add = event.target.closest('[data-add]');
+        const edit = event.target.closest('[data-edit]');
+        const del = event.target.closest('[data-delete]');
+        const download = event.target.closest('[data-download]');
+        if (add) openItemModal(add.dataset.add);
+        if (edit) openItemModal(event.target.closest('.tab-pane').id.replace('pane-', ''), Number(edit.dataset.edit));
+        if (del) {
+          const key = event.target.closest('.tab-pane').id.replace('pane-', '');
+          AdminConfirm.show({ title: '항목 삭제', message: '선택한 항목을 삭제하시겠습니까?', onConfirm: () => {
+            dictionaries[key].splice(Number(del.dataset.delete), 1);
+            renderDictionary(key);
+            AdminToast.show('삭제됐습니다.');
+          }});
+        }
+        if (download) AdminToast.show(`${download.dataset.download} 다운로드를 준비했습니다.`);
+      });
+      document.getElementById('saveItemBtn').addEventListener('click', () => {
+        const next = { category: document.getElementById('modalCategory').value || 'CATEGORY', value: document.getElementById('modalValue').value || '새 항목', active: true };
+        if (editIndex === null) dictionaries[currentPane].push(next);
+        else dictionaries[currentPane][editIndex] = next;
+        renderDictionary(currentPane);
+        AdminModal.close('itemModal');
+        AdminToast.show('저장됐습니다.');
+      });
+      document.getElementById('kmsRows').innerHTML = [
+        ['CS-2026-001', 'KMS 후보', '86', '검토대기'],
+        ['CS-2026-002', '상담원 연결', '72', '분류완료'],
+        ['CS-2026-003', '일반 상담', '41', '제외']
+      ].map((row) => `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td><span class="badge badge-primary">${row[3]}</span></td></tr>`).join('');
+      document.getElementById('kmsStartBtn').addEventListener('click', () => AdminToast.show('KMS 분류가 시작됐습니다.'));
+    });
+  </script>
+</body>
+</html>

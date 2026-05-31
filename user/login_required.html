@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>로그인 필요</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 40px 20px; background: #fff; font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif; color: #111; }
+    .phone-frame { width: 390px; height: 844px; border: 1px solid #111; border-radius: 16px; overflow: hidden; background: #fff; display: flex; flex-direction: column; }
+    .state-header { height: 82px; border-bottom: 1px solid #e8e8e8; display: grid; grid-template-columns: 42px 1fr 42px; align-items: center; }
+    .back-btn { border: 0; background: transparent; color: #111; font-size: 34px; line-height: 1; }
+    h1 { text-align: center; font-size: 19px; font-weight: 800; }
+    .state-body { flex: 1; padding: 28px 18px; display: flex; flex-direction: column; }
+    .login-hero { margin-top: 80px; text-align: center; }
+    .login-icon { width: 82px; height: 82px; margin: 0 auto 24px; border-radius: 50%; background: #e0ecfa; color: #0b73d9; display: flex; align-items: center; justify-content: center; font-size: 34px; font-weight: 800; }
+    .login-hero h2 { font-size: 24px; font-weight: 800; line-height: 1.3; }
+    .login-hero p { margin-top: 14px; color: #666; font-size: 15px; line-height: 1.6; }
+    .benefit-card { margin-top: 36px; border: 1px solid #d9e8fb; border-radius: 16px; background: #f8fbff; padding: 18px; }
+    .benefit-card h3 { font-size: 16px; font-weight: 800; }
+    .benefit-card ul { margin: 12px 0 0 18px; color: #555; font-size: 14px; line-height: 1.7; }
+    .primary-btn { margin-top: auto; height: 54px; border: 1px solid #0b73d9; border-radius: 14px; background: #0b73d9; color: #fff; font: inherit; font-size: 17px; font-weight: 800; }
+    .secondary-btn { height: 54px; margin-top: 10px; border: 1px solid #d9d9d9; border-radius: 14px; background: #fff; color: #777; font: inherit; font-size: 16px; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <main class="phone-frame">
+    <header class="state-header">
+      <button class="back-btn" type="button" aria-label="뒤로가기">‹</button>
+      <h1>로그인 필요</h1>
+    </header>
+    <section class="state-body">
+      <div class="login-hero">
+        <div class="login-icon" aria-hidden="true">i</div>
+        <h2>로그인이 필요합니다.</h2>
+        <p>보유제품, 예약 내역, 맞춤 추천을 확인하려면<br>아이나비 계정으로 로그인해주세요.</p>
+      </div>
+      <div class="benefit-card">
+        <h3>로그인 후 이용 가능</h3>
+        <ul>
+          <li>보유제품 등록 및 관리</li>
+          <li>방문 AS 예약 확인·변경</li>
+          <li>제품별 소모품 추천</li>
+          <li>커넥티드 서비스 안내</li>
+        </ul>
+      </div>
+      <button class="primary-btn" type="button">로그인하기</button>
+      <button class="secondary-btn" type="button">비회원으로 둘러보기</button>
+    </section>
+  </main>
+</body>
+</html>

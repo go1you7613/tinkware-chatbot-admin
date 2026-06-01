@@ -89,9 +89,15 @@ a:hover { color: var(--color-primary-dark); }
 .header-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
   width: calc(var(--sidebar-width) - 20px);
+  height: var(--header-height);
   text-decoration: none;
+}
+.header-logo-img {
+  display: block;
+  width: 142px;
+  height: 14px;
+  object-fit: contain;
 }
 .header-logo-icon {
   width: 32px;

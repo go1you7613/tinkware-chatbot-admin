@@ -96,8 +96,7 @@ const AdminLayout = {
     target.innerHTML = `
       <header class="admin-header">
         <a href="index.html" class="header-logo text-decoration-none">
-          <div class="header-logo-icon"><i class="bi bi-chat-dots-fill"></i></div>
-          <div class="header-logo-text">팅크웨어 챗봇</div>
+          <img src="image/logo-thinkware-ai-chat.png" alt="THINKWARE AI Chat" class="header-logo-img">
         </a>
         <div class="header-divider"></div>
         <button class="header-toggle" id="sidebarToggle" title="메뉴 접기/펼치기">

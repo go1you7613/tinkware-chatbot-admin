@@ -546,6 +546,9 @@ a:hover { color: var(--color-primary-dark); }
   box-shadow: var(--shadow-btn);
   line-height: 1.5715;
   white-space: nowrap;
+  min-width: max-content;
+  overflow: visible;
+  text-overflow: clip;
 }
 .btn-primary:hover  { background: var(--color-primary-dark); border-color: var(--color-primary-dark); }
 .btn-primary:active { background: #0050B3; border-color: #0050B3; }
@@ -568,6 +571,9 @@ a:hover { color: var(--color-primary-dark); }
   box-shadow: var(--shadow-btn);
   line-height: 1.5715;
   white-space: nowrap;
+  min-width: max-content;
+  overflow: visible;
+  text-overflow: clip;
 }
 .btn-default:hover { border-color: var(--color-primary); color: var(--color-primary); }
 
@@ -586,6 +592,10 @@ a:hover { color: var(--color-primary-dark); }
   cursor: pointer;
   box-shadow: var(--shadow-btn);
   line-height: 1.5715;
+  white-space: nowrap;
+  min-width: max-content;
+  overflow: visible;
+  text-overflow: clip;
 }
 .btn-danger:hover { background: #FF7875; border-color: #FF7875; }
 
@@ -669,6 +679,7 @@ a:hover { color: var(--color-primary-dark); }
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
   border: 1px solid var(--color-border-light);
+  min-width: 0;
 }
 .admin-card-header {
   padding: 16px 24px;
@@ -679,7 +690,10 @@ a:hover { color: var(--color-primary-dark); }
   align-items: center;
   justify-content: space-between;
 }
-.admin-card-body { padding: 24px; }
+.admin-card-body {
+  padding: 24px;
+  min-width: 0;
+}
 
 /* ── 뱃지 ── */
 .badge {
@@ -703,7 +717,9 @@ a:hover { color: var(--color-primary-dark); }
 /* ── 테이블 ── */
 .admin-table {
   width: 100%;
+  min-width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
   font-size: var(--font-size-base);
 }
 .admin-table th {
@@ -719,9 +735,76 @@ a:hover { color: var(--color-primary-dark); }
   padding: 12px 16px;
   border-bottom: 1px solid var(--color-border-light);
   color: var(--color-text-main);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .admin-table tr:last-child td { border-bottom: none; }
 .admin-table tr:hover td { background: #FAFAFA; }
+
+/* ── 결과 테이블 ── */
+.admin-table-wrap,
+.result-grid-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+.result-grid,
+.scorecard-table {
+  width: 100%;
+  min-width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 13px;
+}
+.result-grid th,
+.scorecard-table th {
+  background: #FAFAFA;
+  color: var(--color-text-sub);
+  font-weight: 500;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-light);
+  white-space: nowrap;
+}
+.result-grid td,
+.scorecard-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--color-border-light);
+  color: var(--color-text-main);
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.result-grid tr:hover td {
+  background: #FAFAFA;
+  cursor: pointer;
+}
+.result-grid tr.selected td { background: var(--color-primary-light); }
+.admin-table td:has(.badge),
+.admin-table td:has([class$="-badge"]),
+.admin-table td:has([class$="-chip"]),
+.admin-table td:has(button),
+.admin-table td:has(.btn-primary),
+.admin-table td:has(.btn-default),
+.admin-table td:has(.btn-danger),
+.result-grid td:has(.badge),
+.result-grid td:has([class$="-badge"]),
+.result-grid td:has([class$="-chip"]),
+.result-grid td:has(button),
+.result-grid td:has(.btn-primary),
+.result-grid td:has(.btn-default),
+.result-grid td:has(.btn-danger),
+.scorecard-table td:has(.badge),
+.scorecard-table td:has([class$="-badge"]),
+.scorecard-table td:has([class$="-chip"]),
+.scorecard-table td:has(button),
+.scorecard-table td:has(.btn-primary),
+.scorecard-table td:has(.btn-default),
+.scorecard-table td:has(.btn-danger) {
+  overflow: visible;
+  text-overflow: clip;
+}
 
 /* ── 모달 ── */
 .modal-overlay {
@@ -978,8 +1061,42 @@ a:hover { color: var(--color-primary-dark); }
 /* ── 슬라이더 ── */
 .form-range {
   width: 100%;
+  height: 18px;
   accent-color: var(--color-primary);
   cursor: pointer;
+  background: transparent;
+}
+.form-range::-webkit-slider-runnable-track {
+  height: 4px;
+  background: #BFBFBF;
+  border-radius: 999px;
+}
+.form-range::-webkit-slider-thumb {
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  background: var(--color-primary);
+  border: 2px solid var(--color-bg-white);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.18);
+}
+.form-range::-moz-range-track {
+  height: 4px;
+  background: #BFBFBF;
+  border-radius: 999px;
+}
+.form-range::-moz-range-progress {
+  height: 4px;
+  background: var(--color-primary);
+  border-radius: 999px;
+}
+.form-range::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: var(--color-primary);
+  border: 2px solid var(--color-bg-white);
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.18);
 }
 
 /* ── 스크롤바 ── */

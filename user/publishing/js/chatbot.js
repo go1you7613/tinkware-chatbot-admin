@@ -29,13 +29,22 @@
   const asRegionSelect = asFlow?.querySelector('[data-js="asRegionSelect"]');
   const asRegionLabel = asFlow?.querySelector('[data-js="asRegionLabel"]');
   const asToast = asFlow?.querySelector('[data-js="asToast"]');
+  const specFlow = document.getElementById('spec-flow');
+  const specProductTabs = specFlow?.querySelector('[data-js="specProductTabs"]');
+  const specResolution = specFlow?.querySelector('[data-js="specResolution"]');
+  const specFeature = specFlow?.querySelector('[data-js="specFeature"]');
+  const specUser = specFlow?.querySelector('[data-js="specUser"]');
+  const specGuideTitle = specFlow?.querySelector('[data-js="specGuideTitle"]');
+  const specGuideBody = specFlow?.querySelector('[data-js="specGuideBody"]');
   let asToastTimer = null;
   let asStepIndex = 0;
 
   // ── 캘린더 · 시간 슬롯 ────────────────────────────────────────
   const DOW_KO = ['일', '월', '화', '수', '목', '금', '토'];
 
-  // 프로토타입용 요일별 예약 가능 시간 (0=일, 6=토 = 센터 휴무)
+  // [프로토타입] SLOT_AVAIL: 요일별 예약 가능 시간 더미 데이터 (0=일, 6=토 = 센터 휴무)
+  // [개발 연동] GET /api/as/slots?centerId={id}&date={YYYY-MM-DD} 응답으로 교체
+  // 응답 예: { available: ["09:30", "10:00", ...] }
   const SLOT_AVAIL = {
     1: ['09:30', '10:00', '10:30', '11:00', '13:00', '13:30', '14:00', '14:30'],
     2: ['09:30', '10:00', '13:00', '14:00', '14:30'],
@@ -44,6 +53,8 @@
     5: ['09:30', '10:00', '10:30', '14:00']
   };
 
+  // [참고] ALL_TIME_SLOTS: 시간 슬롯 그리드 표시용 전체 목록 (고정). 개발 시 시간대 정책 변경 시 이 배열 수정
+  // alwaysDisabled: 항상 비활성(운영 불가 시간대), lunch: 점심 구분선
   const ALL_TIME_SLOTS = [
     { time: '09:00', alwaysDisabled: true },
     { time: '09:30' }, { time: '10:00' }, { time: '10:30' }, { time: '11:00' },
@@ -52,6 +63,11 @@
     { time: '13:00' }, { time: '13:30' }, { time: '14:00' }, { time: '14:30' }
   ];
 
+  /**
+   * 선택한 날짜의 예약 가능 시간 슬롯을 [data-js="asSlotGrid"]에 렌더링
+   * @param {Date} date - 캘린더에서 선택된 날짜 객체
+   * [개발 연동] SLOT_AVAIL 더미 데이터를 API 응답으로 교체하면 이 함수 내부 avail 변수만 수정
+   */
   const renderTimeSlots = (date) => {
     if (!asSlotGrid || !asSlotTitle) return;
     const dow = date.getDay();
@@ -112,6 +128,13 @@
     activeCalendarMonthSelect = null;
   };
 
+  /**
+   * Flatpickr 내부 DOM에 커스텀 월 선택 드롭다운을 주입/동기화
+   * [주의] Flatpickr 내부 클래스명(.flatpickr-current-month, .cur-month 등)에 직접 의존
+   *        Flatpickr 버전 업그레이드 시 DOM 구조가 달라질 수 있어 재검증 필요
+   *        현재 검증 버전: flatpickr@4.6.x (CDN)
+   * @param {object} fp - Flatpickr 인스턴스
+   */
   const syncCalendarMonthDropdown = (fp) => {
     const currentMonth = fp.calendarContainer?.querySelector('.flatpickr-current-month');
     const nativeSelect = currentMonth?.querySelector('select.flatpickr-monthDropdown-months, select.cur-month');
@@ -287,6 +310,29 @@
     'product-spec-flow': 'spec-flow',
     'reservation-check-flow': 'reservation-flow'
   };
+  const specProductData = {
+    qxd5000: {
+      resolution: '전후방 QHD',
+      feature: '야간 강화 AI ISP',
+      user: '장거리 주행',
+      guideTitle: '주차 녹화 설정',
+      guideBody: '제품 메뉴에서 주차 녹화 모드를 켠 뒤 배터리 보호 전압을 설정해주세요. 장시간 주차 시 차량 배터리 상태를 확인하는 것이 좋습니다.'
+    },
+    fxd900: {
+      resolution: '전후방 FHD',
+      feature: '스마트 보정 ISP',
+      user: '일상 주행',
+      guideTitle: '커넥티드 연동 설정',
+      guideBody: '전용 앱에서 기기를 등록한 뒤 블루투스와 위치 권한을 허용해주세요. 실시간 상태 확인과 알림 수신을 위해 앱 알림도 함께 켜두는 것이 좋습니다.'
+    },
+    qxd900mini: {
+      resolution: '전후방 FHD',
+      feature: '소형 2채널',
+      user: '소형 차량',
+      guideTitle: '기본 녹화 확인',
+      guideBody: '메모리카드를 삽입한 뒤 전원을 켜고 녹화 LED 상태를 확인해주세요. 설치 공간이 좁은 차량은 렌즈 각도를 먼저 맞춘 뒤 본체를 고정하는 것이 좋습니다.'
+    }
+  };
 
   const resolveFlowId = (flowId) => flowAliases[flowId] || flowId;
 
@@ -422,6 +468,11 @@
 
   const getNowDatetime = () => new Date().toISOString().slice(0, 16);
 
+  /**
+   * 사용자 메시지 버블을 [data-js="messageList"]에 추가
+   * @param {string} message - 전송할 텍스트 메시지
+   * [개발 연동] 메시지 소켓 또는 API 전송 로직을 이 함수 이후에 연결
+   */
   const addUserMessage = (message) => {
     if (!messageList || !message) return;
     const row = document.createElement('div');
@@ -437,6 +488,13 @@
     messageList.appendChild(row);
   };
 
+  /**
+   * AI 응답 메시지 버블을 [data-js="messageList"]에 추가
+   * @param {string} message - AI 응답 텍스트
+   * [프로토타입] 현재 sendMessage()에서 하드코딩된 더미 문자열 전달 중
+   * [개발 연동] AI API 응답(스트리밍 또는 단일 응답)을 받아 이 함수 호출로 교체
+   *            answer-actions 내 버튼은 API 응답 의도에 따라 동적 생성 검토 필요
+   */
   const addAiMessage = (message) => {
     if (!messageList) return;
     const row = document.createElement('div');
@@ -577,6 +635,20 @@
     }
   };
 
+  const renderSpecProduct = (button) => {
+    const product = specProductData[button.dataset.product];
+    if (!product) return;
+    selectInGroup(button);
+    specProductTabs?.querySelectorAll('button').forEach((item) => {
+      item.setAttribute('aria-pressed', String(item === button));
+    });
+    if (specResolution) specResolution.textContent = product.resolution;
+    if (specFeature) specFeature.textContent = product.feature;
+    if (specUser) specUser.textContent = product.user;
+    if (specGuideTitle) specGuideTitle.textContent = product.guideTitle;
+    if (specGuideBody) specGuideBody.textContent = product.guideBody;
+  };
+
   const switchTab = (button) => {
     const group = button.dataset.tabGroup;
     const target = button.dataset.tabTarget;
@@ -607,12 +679,13 @@
         locatorTab: actionTarget.dataset.locatorTab
       });
     }
-    if (action === 'navigate') navigateTo(actionTarget.dataset.href);
+    if (action === 'navigate') navigateTo(actionTarget.dataset.href); // [참고] state.js의 data-state-action="back"과 별도 처리 — 통합 여부 개발팀 판단 필요
     if (action === 'close-flow') closeFlow(actionTarget);
     if (action === 'as-back') goToPreviousAsStep(actionTarget);
     if (action === 'send-message') sendMessage(chatInput?.value || '');
     if (action === 'send-suggestion') sendMessage(actionTarget.dataset.message || actionTarget.textContent || '');
     if (action === 'select-in-group') selectInGroup(actionTarget);
+    if (action === 'select-spec-product') renderSpecProduct(actionTarget);
     if (action === 'toggle-as-region') toggleAsRegionSelect();
     if (action === 'select-as-region') selectAsRegion(actionTarget);
     if (action === 'select-slot') {

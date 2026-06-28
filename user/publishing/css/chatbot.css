@@ -1024,7 +1024,7 @@ fieldset {
 }
 
 #auth-flow .twc-input::placeholder {
-  color: #b8b8b8;
+  color: var(--twc-color-text-placeholder, #b8b8b8);
 }
 
 .flow-footer {
@@ -2280,8 +2280,17 @@ fieldset {
 
 /* ─────────────────────────────────────────────────────────────
    Flatpickr 디자인 토큰 오버라이드 (v2)
-   .twc-calendar 범위로 스코프 — 다른 Flatpickr 인스턴스에 영향 없음
-   Flatpickr 기본 CSS !important 대응 위해 동일 우선순위 적용
+   ─────────────────────────────────────────────────────────────
+   [개발팀 인수인계 주의사항]
+   · 스코프: .twc-calendar 하위로 한정 — 다른 Flatpickr 인스턴스에 영향 없음
+   · !important 사용 이유: Flatpickr 기본 CSS가 전역 !important를 사용하므로
+     동일 우선순위로 오버라이드하기 위해 불가피하게 사용
+   · CDN 버전 고정 권고: flatpickr@4.6.13 고정 사용 (버전 변경 시 클래스명/DOM 구조 달라질 수 있음)
+     <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13"></script>
+   · chatbot.js의 initCustomMonthSelect()가 Flatpickr 내부 DOM을 직접 조작함
+     (월 선택 드롭다운 커스터마이징) — Flatpickr 버전 업그레이드 시 재검증 필요
+   · 토요일 색상 토큰(--twc-color-saturday) 및 포커스 색상 토큰(--twc-color-focus)은
+     tokens.css에 미정의 상태 — fallback 값으로 동작 중, 추후 토큰 등록 권장
 ───────────────────────────────────────────────────────────── */
 .twc-calendar .flatpickr-calendar,
 .twc-calendar .flatpickr-rContainer,
@@ -2455,8 +2464,9 @@ fieldset {
   background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23262626' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
+/* [토큰 신규 등록 권장] tokens.css에 --twc-color-focus: #1677ff 추가 시 아래 fallback 제거 */
 .twc-calendar .twc-calendar-month-select.is-open .twc-calendar-month-button {
-  border-color: #1677ff;
+  border-color: var(--twc-color-focus, #1677ff);
   box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
 }
 
@@ -2542,7 +2552,7 @@ fieldset {
 
 .twc-calendar .twc-calendar-month-list button:hover,
 .twc-calendar .twc-calendar-month-list button.is-selected {
-  background: #f5f5f5;
+  background: var(--twc-color-surface-disabled, #f5f5f5);
 }
 
 /* hover 시 배경 변화 없음 */
@@ -2635,8 +2645,9 @@ fieldset {
 }
 
 /* 요일 헤더 색상: 일=빨강, 토=파랑 */
+/* [토큰 신규 등록 권장] tokens.css에 --twc-color-saturday: #4a90d9 추가 시 fallback 제거 */
 .twc-calendar .flatpickr-weekday:first-child { color: var(--twc-color-accent) !important; }
-.twc-calendar .flatpickr-weekday:last-child  { color: #4a90d9 !important; }
+.twc-calendar .flatpickr-weekday:last-child  { color: var(--twc-color-saturday, #4a90d9) !important; }
 
 /* ── 날짜 그리드 ─────────────────────────────── */
 .twc-calendar .flatpickr-days {
@@ -2683,7 +2694,7 @@ fieldset {
 
 /* 토요일 셀 파랑 */
 .twc-calendar .flatpickr-day.is-saturday:not(.prevMonthDay):not(.nextMonthDay):not(.flatpickr-disabled):not(.disabled) {
-  color: #4a90d9 !important;
+  color: var(--twc-color-saturday, #4a90d9) !important;
 }
 
 /* 전/다음 달 날짜 → 완전 숨김 */

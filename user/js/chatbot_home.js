@@ -4,6 +4,15 @@ document.addEventListener('DOMContentLoaded', () => {
   const productLabel = document.querySelector('.product-section-label');
   const loginCard = document.querySelector('.login-card');
   const loginButton = document.querySelector('.login-btn');
+  const authFlow = document.querySelector('.auth-flow');
+  const authCloseButton = document.querySelector('.auth-close');
+  const authForm = document.querySelector('.auth-form');
+  const headerCloseButton = document.querySelector('.header-close');
+  const chatEndButton = document.querySelector('.chat-end-btn');
+  const surveyFlow = document.querySelector('.survey-flow');
+  const surveyCloseButton = document.querySelector('.survey-close');
+  const surveySubmitButton = document.querySelector('.survey-submit');
+  const surveyChoiceGroups = document.querySelectorAll('.survey-segmented, .survey-score-grid, .survey-reasons');
   const categoryButton = document.querySelector('.cat-btn');
   const categoryModal = document.querySelector('.category-modal');
   const closeButtons = document.querySelectorAll('[data-modal-close]');
@@ -61,7 +70,21 @@ document.addEventListener('DOMContentLoaded', () => {
       `;
     };
 
-    loginButton.addEventListener('click', () => {
+    const openAuthFlow = () => {
+      authFlow?.classList.add('is-open');
+      authFlow?.setAttribute('aria-hidden', 'false');
+    };
+
+    const closeAuthFlow = () => {
+      authFlow?.classList.remove('is-open');
+      authFlow?.setAttribute('aria-hidden', 'true');
+    };
+
+    loginButton.addEventListener('click', openAuthFlow);
+    authCloseButton?.addEventListener('click', closeAuthFlow);
+    authForm?.addEventListener('submit', (event) => {
+      event.preventDefault();
+      closeAuthFlow();
       renderProductRegister();
     });
 
@@ -82,6 +105,16 @@ document.addEventListener('DOMContentLoaded', () => {
     categoryModal.classList.remove('is-open');
     categoryModal.setAttribute('aria-hidden', 'true');
     categoryButton.setAttribute('aria-expanded', 'false');
+  };
+
+  const openSurveyFlow = () => {
+    surveyFlow?.classList.add('is-open');
+    surveyFlow?.setAttribute('aria-hidden', 'false');
+  };
+
+  const closeSurveyFlow = () => {
+    surveyFlow?.classList.remove('is-open');
+    surveyFlow?.setAttribute('aria-hidden', 'true');
   };
 
   const asStepMeta = [
@@ -168,6 +201,20 @@ document.addEventListener('DOMContentLoaded', () => {
     button.addEventListener('click', closeModal);
   });
 
+  headerCloseButton?.addEventListener('click', openSurveyFlow);
+  chatEndButton?.addEventListener('click', openSurveyFlow);
+  surveyCloseButton?.addEventListener('click', closeSurveyFlow);
+  surveySubmitButton?.addEventListener('click', closeSurveyFlow);
+  surveyChoiceGroups.forEach((group) => {
+    group.addEventListener('click', (event) => {
+      const button = event.target.closest('button');
+      if (!button || !group.contains(button)) return;
+      group.querySelectorAll('button').forEach((item) => {
+        item.classList.toggle('is-selected', item === button);
+      });
+    });
+  });
+
   supportCards.forEach((card, index) => {
     card.addEventListener('click', () => {
       if (index === 1 || index === 2) {
@@ -241,6 +288,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (event.key === 'Escape' && locatorFlow?.classList.contains('is-open')) {
       closeLocatorFlow();
+    }
+    if (event.key === 'Escape' && surveyFlow?.classList.contains('is-open')) {
+      closeSurveyFlow();
+    }
+    if (event.key === 'Escape' && authFlow?.classList.contains('is-open')) {
+      authFlow.classList.remove('is-open');
+      authFlow.setAttribute('aria-hidden', 'true');
     }
     featureFlows.forEach((flow) => {
       if (event.key === 'Escape' && flow.classList.contains('is-open')) {

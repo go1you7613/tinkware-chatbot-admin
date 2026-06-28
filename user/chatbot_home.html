@@ -15,9 +15,6 @@
   <!-- ====== STICKY HEADER ====== -->
   <div class="sticky-header">
 
-    <!-- Hero Image (배너 이미지 영역) -->
-    <div class="hero-image"></div>
-
     <!-- Header Bar (로고 + 닫기 버튼) -->
     <div class="header-bar">
       <div class="header-inner">
@@ -194,12 +191,24 @@
         <div class="chat-ai-row">
           <div class="chat-ai-avatar">avatar</div>
           <div class="chat-ai-card answer-bubble">
-            <h3>QXD5000 주요 장점</h3>
+            <h3>모니터 전원 케이블 연결 불량 점검 방법</h3>
+            <p>
+              고객님, 아이나비 모니터 전원 케이블이 끝까지 체결되지 않았거나
+              연결부가 흔들리면 화면이 꺼지거나 전원이 불안정할 수 있어요.
+            </p>
             <ul>
-              <li><strong>전후방 QHD</strong>로 주행 상황을 더 선명하게 기록합니다.</li>
-              <li><strong>야간 강화 AI ISP</strong>가 어두운 도로의 시인성을 보완합니다.</li>
-              <li><strong>커넥티드 기능</strong>과 함께 사용하면 충격 알림 확인이 편리합니다.</li>
+              <li><strong>전원 코드와 어댑터</strong>가 콘센트와 모니터에 끝까지 꽂혀 있는지 확인해 주세요.</li>
+              <li><strong>DC-jack 단자</strong> 주변에 휘어짐, 흔들림, 이물질이 없는지 살펴봐 주세요.</li>
+              <li><strong>케이블이 팽팽하게 당겨진 상태</strong>라면 움직일 때 접촉이 끊길 수 있으니 여유 있게 정리해 주세요.</li>
             </ul>
+            <p>
+              위 항목을 확인한 뒤에도 동일 증상이 반복되면 아이나비 고객센터나
+              가까운 서비스센터를 통해 제품 점검을 받아보시는 것을 권장드립니다.
+            </p>
+            <div class="answer-reference" aria-label="참조 이미지">
+              <img src="image/reference-inavi-qxd1-plus.png" alt="아이나비 QXD1 PLUS 제품 이미지">
+              <span>참조 이미지 · 아이나비 QXD1 PLUS</span>
+            </div>
             <div class="answer-feedback" aria-label="답변 피드백">
               <button type="button">복사</button>
             </div>
@@ -378,6 +387,11 @@
       </div>
     </div>
 
+    <section class="chat-end-section" aria-label="상담 종료">
+      <p>상담을 종료할까요?</p>
+      <button class="chat-end-btn" type="button">종료하기</button>
+    </section>
+
     <div class="scroll-bottom-pad"></div>
   </div><!-- /scroll-content -->
 
@@ -501,6 +515,108 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- ====== LOGIN FULL PAGE ====== -->
+  <div class="auth-flow" id="auth-flow" aria-hidden="true">
+    <div class="auth-flow-header">
+      <span></span>
+      <img src="image/logo.png" alt="THINKWARE AI Chat">
+      <button class="auth-close" type="button" aria-label="닫기">×</button>
+    </div>
+
+    <section class="auth-panel" aria-labelledby="authTitle">
+      <h2 id="authTitle">로그인</h2>
+
+      <form class="auth-form">
+        <label class="sr-only" for="authUsername">아이디</label>
+        <input id="authUsername" type="text" placeholder="아이디" autocomplete="username">
+
+        <label class="sr-only" for="authPassword">비밀번호</label>
+        <input id="authPassword" type="password" placeholder="비밀번호" autocomplete="current-password">
+
+        <nav class="auth-links" aria-label="계정 도움말">
+          <a href="#">아이디 찾기</a>
+          <a href="#">비밀번호 찾기</a>
+          <a href="#">회원 가입하기</a>
+        </nav>
+
+        <div class="auth-captcha" aria-label="reCAPTCHA 예시 영역">
+          <div>
+            <span class="auth-captcha-box"></span>
+            <span>로봇이 아닙니다</span>
+          </div>
+          <p>reCAPTCHA<br>개인정보 · 약관</p>
+        </div>
+
+        <button class="auth-login-submit" type="submit">로그인</button>
+      </form>
+
+      <div class="auth-social">
+        <h3>간편 로그인</h3>
+        <button type="button"><span class="auth-social-icon auth-naver">N</span>Naver 계정으로 로그인</button>
+        <button type="button"><span class="auth-social-icon auth-kakao">K</span>Kakao 계정으로 로그인</button>
+        <button type="button"><span class="auth-social-icon auth-facebook">f</span>Facebook 계정으로 로그인</button>
+        <button type="button"><span class="auth-social-icon auth-google">G</span>Google 계정으로 로그인</button>
+        <button type="button"><span class="auth-social-icon auth-apple">A</span>Apple 계정으로 로그인</button>
+      </div>
+    </section>
+
+    <p class="auth-note">아이나비 계정으로 제품 등록, 업데이트, AS 예약 내역을 확인할 수 있습니다.</p>
+  </div>
+
+  <!-- ====== CHAT SURVEY FULL PAGE ====== -->
+  <div class="survey-flow" id="survey-flow" aria-hidden="true">
+    <div class="survey-header">
+      <span></span>
+      <h2>AI Chat 상담 경험 조사</h2>
+      <button class="survey-close" type="button" aria-label="닫기">×</button>
+    </div>
+
+    <form class="survey-body">
+      <fieldset class="survey-fieldset">
+        <legend>문제가 해결되셨나요?</legend>
+        <div class="survey-segmented" role="group" aria-label="문제 해결 여부">
+          <button type="button">아니요</button>
+          <button class="is-selected" type="button">예</button>
+        </div>
+      </fieldset>
+
+      <fieldset class="survey-fieldset">
+        <legend>상담 내용에 얼마나 만족하셨는지요?</legend>
+        <div class="survey-score-grid" role="group" aria-label="상담 만족도">
+          <button type="button">1</button>
+          <button type="button">2</button>
+          <button type="button">3</button>
+          <button type="button">4</button>
+          <button type="button">5</button>
+          <button type="button">6</button>
+          <button type="button">7</button>
+          <button type="button">8</button>
+          <button type="button">9</button>
+          <button class="is-selected" type="button">10</button>
+        </div>
+        <div class="survey-score-labels" aria-hidden="true">
+          <span>불만족</span>
+          <span>만족</span>
+        </div>
+      </fieldset>
+
+      <fieldset class="survey-fieldset">
+        <legend>어떤 점이 만족스러우셨나요?</legend>
+        <div class="survey-reasons">
+          <button type="button">AI Chat이 알려준 정보가 유용함</button>
+          <button type="button">AI Chat이 내 말을 잘 이해함</button>
+          <button type="button">AI Chat 이용 중 오류 없이 대화함</button>
+          <label class="survey-direct-input">
+            <span class="sr-only">직접 입력</span>
+            <input type="text" placeholder="직접 입력">
+          </label>
+        </div>
+      </fieldset>
+
+      <button class="survey-submit" type="button">평가 제출하기</button>
+    </form>
   </div>
 
   <!-- ====== STORE / SERVICE CENTER FINDER FULL PAGE ====== -->
@@ -944,6 +1060,6 @@
   </div>
 
 </div><!-- /phone-frame -->
-  <script src="js/chatbot_home.js"></script>
+  <script src="js/chatbot_home.js?v=auth-popup"></script>
 </body>
 </html>
